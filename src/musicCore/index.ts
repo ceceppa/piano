@@ -1,5 +1,5 @@
-export { chordTones, chordName, intervalsFor, variationsFor, QUALITIES } from './qualities'
-export type { ChordQuality, QualityId, Variation } from './qualities'
+export { chordTones, chordName, chordFullName, isRecommendedForGenre, intervalsFor, variationsFor, QUALITIES, GENRES } from './qualities'
+export type { ChordQuality, QualityId, Variation, GenreId } from './qualities'
 export { SCALES, scaleTones, scaleLabel } from './scales'
 export type { ScaleType, ScaleTypeId } from './scales'
 export { noteName, PITCH_CLASS_LABELS } from './pitch'

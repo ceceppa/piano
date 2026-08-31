@@ -15,30 +15,39 @@ export type QualityId =
   | '9'
   | 'add9'
 
+export type GenreId = 'Any' | 'Pop' | 'Rock' | 'Jazz' | 'Blues' | 'Classical'
+
+/** Canonical genre catalogue — single source for the genre selector's options (tech-spec §Data model). */
+export const GENRES: readonly GenreId[] = ['Any', 'Pop', 'Rock', 'Jazz', 'Blues', 'Classical']
+
 export interface ChordQuality {
   id: QualityId
   /** Semitone intervals from the root, canonical in tech-spec §Data model. */
   intervals: readonly number[]
   /** Symbol suffix appended to the root label, e.g. major -> "" (plain root). */
   suffix: string
+  /** Full readable word(s) for the screen title, e.g. "diminished" -> "A diminished". */
+  name: string
   /** Static genre-relevance guidance labels; guidance, never an objective claim. */
   genreGuide: readonly string[]
+  /** Structured genre tags read by isRecommendedForGenre; canonical in tech-spec §Data model. */
+  genres: readonly GenreId[]
 }
 
 /** Catalogue order is normative (variationsFor, selectors, variation panel). */
 export const QUALITIES: readonly ChordQuality[] = [
-  { id: 'major', intervals: [0, 4, 7], suffix: '', genreGuide: ['The most common chord in music'] },
-  { id: 'minor', intervals: [0, 3, 7], suffix: 'm', genreGuide: ['Common in pop and rock'] },
-  { id: 'diminished', intervals: [0, 3, 6], suffix: 'dim', genreGuide: ['A jazz and film-music tension chord'] },
-  { id: 'augmented', intervals: [0, 4, 8], suffix: 'aug', genreGuide: ['Used for colour and suspense'] },
-  { id: 'sus2', intervals: [0, 2, 7], suffix: 'sus2', genreGuide: ['Common in rock and ambient music'] },
-  { id: 'sus4', intervals: [0, 5, 7], suffix: 'sus4', genreGuide: ['Common in rock and folk'] },
-  { id: '6', intervals: [0, 4, 7, 9], suffix: '6', genreGuide: ['A jazz and swing favourite'] },
-  { id: '7', intervals: [0, 4, 7, 10], suffix: '7', genreGuide: ['The blues staple'] },
-  { id: 'maj7', intervals: [0, 4, 7, 11], suffix: 'maj7', genreGuide: ['A jazz favourite'] },
-  { id: 'm7', intervals: [0, 3, 7, 10], suffix: 'm7', genreGuide: ['Common in jazz and neo-soul'] },
-  { id: '9', intervals: [0, 4, 7, 10, 14], suffix: '9', genreGuide: ['Popular in jazz and R&B'] },
-  { id: 'add9', intervals: [0, 4, 7, 14], suffix: 'add9', genreGuide: ['A soft, modern colour'] },
+  { id: 'major', intervals: [0, 4, 7], suffix: '', name: 'major', genreGuide: ['The most common chord in music'], genres: [] },
+  { id: 'minor', intervals: [0, 3, 7], suffix: 'm', name: 'minor', genreGuide: ['Common in pop and rock'], genres: ['Pop', 'Rock'] },
+  { id: 'diminished', intervals: [0, 3, 6], suffix: 'dim', name: 'diminished', genreGuide: ['A jazz and film-music tension chord'], genres: ['Jazz'] },
+  { id: 'augmented', intervals: [0, 4, 8], suffix: 'aug', name: 'augmented', genreGuide: ['Used for colour and suspense'], genres: [] },
+  { id: 'sus2', intervals: [0, 2, 7], suffix: 'sus2', name: 'suspended 2nd', genreGuide: ['Common in rock and ambient music'], genres: ['Rock'] },
+  { id: 'sus4', intervals: [0, 5, 7], suffix: 'sus4', name: 'suspended 4th', genreGuide: ['Common in rock and folk'], genres: ['Rock'] },
+  { id: '6', intervals: [0, 4, 7, 9], suffix: '6', name: 'sixth', genreGuide: ['A jazz and swing favourite'], genres: ['Jazz'] },
+  { id: '7', intervals: [0, 4, 7, 10], suffix: '7', name: 'dominant seventh', genreGuide: ['The blues staple'], genres: ['Blues'] },
+  { id: 'maj7', intervals: [0, 4, 7, 11], suffix: 'maj7', name: 'major seventh', genreGuide: ['A jazz favourite'], genres: ['Jazz'] },
+  { id: 'm7', intervals: [0, 3, 7, 10], suffix: 'm7', name: 'minor seventh', genreGuide: ['Common in jazz and neo-soul'], genres: ['Jazz'] },
+  { id: '9', intervals: [0, 4, 7, 10, 14], suffix: '9', name: 'dominant ninth', genreGuide: ['Popular in jazz and R&B'], genres: ['Jazz'] },
+  { id: 'add9', intervals: [0, 4, 7, 14], suffix: 'add9', name: 'added ninth', genreGuide: ['A soft, modern colour'], genres: [] },
 ]
 
 const QUALITY_BY_ID: Readonly<Record<QualityId, ChordQuality>> = Object.fromEntries(
@@ -58,6 +67,17 @@ export function chordTones(root: PitchClass, quality: QualityId): PitchClass[] {
 export function chordName(root: PitchClass, quality: QualityId): string {
   if (!QUALITY_BY_ID[quality]) throw new Error(`unknown chord quality: ${String(quality)}`)
   return `${noteName(root)}${QUALITY_BY_ID[quality].suffix}`
+}
+
+export function chordFullName(root: PitchClass, quality: QualityId): string {
+  if (!QUALITY_BY_ID[quality]) throw new Error(`unknown chord quality: ${String(quality)}`)
+  return `${noteName(root)} ${QUALITY_BY_ID[quality].name}`
+}
+
+export function isRecommendedForGenre(quality: QualityId, genre: GenreId): boolean {
+  if (!QUALITY_BY_ID[quality]) throw new Error(`unknown chord quality: ${String(quality)}`)
+  if (genre === 'Any') return false
+  return QUALITY_BY_ID[quality].genres.includes(genre)
 }
 
 export interface Variation {

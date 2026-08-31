@@ -40,10 +40,28 @@ node _mano/scripts/scaffold.js run --name piano-chord-explorer -- npm create vit
 | Entity | Fields | Notes |
 |--------|--------|-------|
 | PitchClass | `value` 0–11 (C=0 … B=11), `label` ("C"…"B", sharps for accidentals) | §6.1: all 12 chromatic roots selectable |
-| ChordQuality | `id`, `intervals: number[]` (semitones), `suffix`, `genreGuide: string[]` | catalogue = major, minor, diminished, augmented, sus2, sus4, 6, 7, maj7, m7, 9, add9 |
+| ChordQuality | `id`, `intervals: number[]` (semitones), `suffix`, `name: string` (full readable name), `genreGuide: string[]`, `genres: GenreId[]` | catalogue = major, minor, diminished, augmented, sus2, sus4, 6, 7, maj7, m7, 9, add9. `name` and `genres` are additive fields on the existing 12 entries — no id/interval/suffix changes — so they don't trip the phase brief's "no changes to predefined catalogues" line; see the table below for exact values. |
+
+**Chord quality — `name` and `genres` values (this phase).** `name` is the full readable word(s) used in the screen title (e.g. root "A" + name "diminished" → "A diminished"). `genres` is the structured tag set `isRecommendedForGenre` reads; it replaces parsing the free-text `genreGuide`, and an empty list is a valid outcome — that quality simply never shows a "Recommended" cue.
+
+| id | name | genres |
+|---|---|---|
+| major | major | `[]` |
+| minor | minor | `[Pop, Rock]` |
+| diminished | diminished | `[Jazz]` |
+| augmented | augmented | `[]` |
+| sus2 | suspended 2nd | `[Rock]` |
+| sus4 | suspended 4th | `[Rock]` |
+| 6 | sixth | `[Jazz]` |
+| 7 | dominant seventh | `[Blues]` |
+| maj7 | major seventh | `[Jazz]` |
+| m7 | minor seventh | `[Jazz]` |
+| 9 | dominant ninth | `[Jazz]` |
+| add9 | added ninth | `[]` |
+| GenreId | `'Any' \| 'Pop' \| 'Rock' \| 'Jazz' \| 'Blues' \| 'Classical'` | canonical genre catalogue; single source for the genre selector's options and for `ChordQuality.genres` matching — replaces the string literal previously local to the selector component |
 | ScaleType | `major`, `naturalMinor`; each with `intervals` | scale set this phase (§11 base) |
 | KeyContext | `root: PitchClass`, `scaleType` | the optional key/mode advanced control |
-| Selection | `root`, `quality`, `key: KeyContext`, `scaleMode: 'chord-root'\|'key'`, `viewMode: 'chord'\|'scale'\|'both'` | default: C major, scaleMode `chord-root`, viewMode `both` |
+| Selection | `root`, `quality`, `key: KeyContext`, `scaleMode: 'chord-root'\|'key'`, `viewMode: 'chord'\|'scale'\|'both'`, `genre: GenreId` | default: C major, scaleMode `chord-root`, viewMode `both`, genre `Any` |
 | Voicing | `baseMidi: number[]`, `inversion: number` | Phase 1 always root-position close voicing (`inversion: 0`); concept reserved so later voicings/inversions extend, not rework |
 | DisplayRange | `startMidi`, `endMidi` | default 2 octaves from C3 (48–71); selectable so keys stay usable on mobile |
 
@@ -56,6 +74,8 @@ node _mano/scripts/scaffold.js run --name piano-chord-explorer -- npm create vit
 | `musicCore` | `rootPositionVoice(chord)` | `chord: {root, quality}` | `number[]` MIDI notes in a default band around C3 | `chordTones` octave-shifted; always `inversion: 0` |
 | `musicCore` | `variationsFor(root, currentQuality)` | — | `{quality, name, genreGuide}[]` in catalogue order, excluding `currentQuality` | `ChordQuality` catalogue filtered |
 | `musicCore` | `chordName(root, quality)` | — | string (e.g. "A", "Am", "A7", "A♯") | PitchClass `label` + quality `suffix` |
+| `musicCore` | `chordFullName(root: PitchClass, quality: ChordQuality)` | — | string (e.g. "A diminished") | PitchClass `label` + quality `name`, space-joined |
+| `musicCore` | `isRecommendedForGenre(quality: ChordQuality, genre: GenreId)` | — | `boolean` | `true` only when `quality.genres` includes `genre`; always `false` for `genre === 'Any'` — "Any" is not a wildcard match, it shows no recommendation cue on any tile (phase brief E4c); pure lookup, no matching against free-text `genreGuide` |
 | `audioEngine` | `init()` | — | `Promise<void>`; resolves/resumes on a user gesture | lazily creates + resumes shared `AudioContext` |
 | `audioEngine` | `noteOn(midi: number)` | — | plays immediately; silently no-ops if not initialised / not resumed | allocates a voice from pool |
 | `audioEngine` | `noteOff(midi: number)` | — | releases the playing voice | maps release to allocated voice |
@@ -73,6 +93,7 @@ No persistence this phase: the selection model is in-memory only (`useSelectionS
 - **AudioContext created on first user gesture.** Browsers block autoplay; every playback path (key press, play chord, scale, arpeggio) is reachable only through gestures, so a lazy `init()` on first interaction satisfies the policy.
 - **Theory engine is pure and dependency-free.** `musicCore` is pure functions → unit-testable in Vitest; UI and audio never compute intervals themselves.
 - **Single store drives "immediate see-and-hear."** Any selector update writes one `Selection`; keyboard highlights, variation panel, and playback read it reactively, so the screen and the sound always reflect the same selection.
+- **Genre recommends, never filters.** Selecting a genre marks matching chord-type tiles with a non-colour "Recommended" cue (text or icon, never colour alone, per the accessibility posture); no tile is hidden, reordered, or disabled. A hard filter could empty the tile grid for a genre few qualities are tagged with, which would violate "a useful default is always visible." The genre control keeps its existing secondary-control-row placement (§Screen Composition) — its behavioural link to the tile grid, not a relocation, is what makes it more than "a settings-style equal." Choosing `Any` clears the cue entirely rather than matching every tile — `isRecommendedForGenre` returns `false` for `Any` by contract, so no quality needs a `genres` entry naming it.
 
 ## Out of Scope
 

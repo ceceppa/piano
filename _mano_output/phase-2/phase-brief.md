@@ -24,17 +24,24 @@ The user can identify the selected chord at a glance, see it on the keyboard imm
 
 ## Phase Scope
 
-- The chord-root marker on the keyboard becomes unmistakable at a glance (stronger non-colour cue, targeted to the review defect).
-- The selected chord becomes a prominent screen title using the full readable name (e.g. "A diminished"); the short symbol stays in controls and chord tiles.
-- Root-note and chord-quality controls become the dominant control pair, placed together at the top of the control area.
-- Scale-follow, view mode, keyboard range, note names, and genre are demoted to secondary display/context controls with less visual weight.
-- The Musical Context area loses its form-like bordered-card feel: lighter styling, shorter labels, fewer borders, spacing-and-grouping hierarchy.
-- The keyboard sits directly after the root and quality controls so the selection visibly drives the highlighted keyboard.
-- Playback stays attached directly beneath the keyboard; Play chord is the primary action, Arpeggiate and Play scale are secondary.
-- The variations section is renamed "Explore [root] chord types" (e.g. "Explore A chord types").
-- Related chord types are grouped visually (Core / Colour / Sevenths & extensions) with the chord symbol visually dominant.
-- The long single-column variation list is replaced by compact selectable tiles or a responsive grid with a clear selected state.
-- Genre acts as a recommendation filter for the related-chord section, not a settings-style equal.
+1. **Chord identity**
+   a. **Root marker** — the chord-root marker on the keyboard becomes unmistakable at a glance (stronger non-colour cue, targeted to the review defect)
+   b. **Screen title** — the selected chord becomes a prominent screen title using the full readable name (e.g. "A diminished"); the short symbol stays in controls and chord tiles
+
+2. **Control hierarchy**
+   a. **Dominant pair** — root-note and chord-quality controls become the dominant control pair, placed together at the top of the control area
+   b. **Secondary controls** — scale-follow, view mode, keyboard range, note names, and genre are demoted to secondary display/context controls with less visual weight
+   c. **Lighter Musical Context area** — loses its form-like bordered-card feel: lighter styling, shorter labels, fewer borders, spacing-and-grouping hierarchy
+   d. **Genre recommends chord types** — genre highlights chord types in the related-chord section that suit the selected genre; it recommends, it never hides, removes, or reorders a chord type, which is what makes it more than a settings-style equal to root and quality
+
+3. **Keyboard and playback placement**
+   a. **Keyboard follows controls** — the keyboard sits directly after the root and quality controls so the selection visibly drives the highlighted keyboard
+   b. **Playback beneath keyboard** — playback stays attached directly beneath the keyboard; Play chord is the primary action, Arpeggiate and Play scale are secondary
+
+4. **Explore related chord types**
+   a. **Renamed section** — the variations section is renamed "Explore [root] chord types" (e.g. "Explore A chord types")
+   b. **Grouped tiles** — related chord types are grouped visually (Core / Colour / Sevenths & extensions) with the chord symbol visually dominant
+   c. **Tile grid** — the long single-column variation list is replaced by compact selectable tiles or a responsive grid with a clear selected state
 
 ## Not This Phase
 
@@ -45,20 +52,21 @@ The user can identify the selected chord at a glance, see it on the keyboard imm
 
 ## Exit Criteria
 
-1. First load
-   - App opens: the selected chord appears as a prominent screen title, and the keyboard is directly beneath the root/quality controls
-2. Identification
-   - User glances at the keyboard: the chord root is distinguishable without relying on colour alone
-3. Selection
-   - User changes the root note: title, keyboard, scale, and related-chord section update immediately
-   - User changes the chord quality: title, keyboard, and related-chord section update immediately
-   - Root and quality read as dominant; display/context controls read as secondary; no large bordered form card
-4. Comparison
-   - User sees "Explore [root] chord types" with chords grouped as Core / Colour / Sevenths & extensions
-   - User taps a chord tile: title and keyboard update immediately, and the tile shows a clear selected state
-5. Playback
-   - User plays the chord, arpeggiates, and plays the scale from controls directly beneath the keyboard
-   - Play chord is the primary action; Arpeggiate and Play scale are visually secondary
+1. **First load**
+   a. App opens: the selected chord appears as a prominent screen title, and the keyboard is directly beneath the root/quality controls
+2. **Identification**
+   a. User glances at the keyboard: the chord root is distinguishable without relying on colour alone
+3. **Selection**
+   a. User changes the root note: title, keyboard, scale, and related-chord section update immediately
+   b. User changes the chord quality: title, keyboard, and related-chord section update immediately
+   c. Root and quality read as dominant; display/context controls read as secondary; no large bordered form card
+4. **Comparison**
+   a. User sees "Explore [root] chord types" with chords grouped as Core / Colour / Sevenths & extensions
+   b. User taps a chord tile: title and keyboard update immediately, and the tile shows a clear selected state
+   c. User changes the genre: chord types in "Explore [root] chord types" that suit the genre show a visible, non-colour "recommended" cue; no chord type is hidden, removed, or reordered; choosing "Any" shows no recommendation cue
+5. **Playback**
+   a. User plays the chord, arpeggiates, and plays the scale from controls directly beneath the keyboard
+   b. Play chord is the primary action; Arpeggiate and Play scale are visually secondary
 
 ## Validation Plan
 

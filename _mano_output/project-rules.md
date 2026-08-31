@@ -83,14 +83,15 @@ Accessibility level: WCAG 2.1 AA
 
 ### Shared `Card`
 
-**What:** Control panels and list surfaces (Musical Context, Variations) use `Card` with the reference's label header.
+**What:** Whether a panel or list surface is wrapped in `Card` is a visual-hierarchy decision, not a fixed assignment — follow the current phase's `design-brief.md` → Screen Composition entry for which surfaces are card-wrapped. When a surface does use `Card`, it uses the shared component with the reference's label header, never a hand-built bordered container.
 
-**Why:** Consistent panel structure across the Explore screen keeps layout changes local.
+**Why:** `Card` styling must stay centralized wherever it's used, but restating a fixed list of card-wrapped surfaces here drifts out of sync as the layout's visual hierarchy changes per phase.
 
 **Pattern:**
 - `Card` renders a padded container with a themed header; content is the consumer's children.
 - Background, border, radius from theme tokens.
 - Header uses the label style from the design brief (`label-mono`); not restated per card.
+- Before wrapping a surface in `Card` (or removing it), check the current phase's `design-brief.md` → Screen Composition rather than assuming.
 
 ### Shared `Chip`
 

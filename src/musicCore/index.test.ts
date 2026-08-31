@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest'
 import {
+  chordFullName,
   chordName,
   chordTones,
+  isRecommendedForGenre,
   noteName,
   QUALITIES,
   rootPositionVoice,
@@ -102,6 +104,37 @@ describe('chordName', () => {
     expect(chordName(A, '7')).toBe('A7')
     expect(chordName(A, 'maj7')).toBe('Amaj7')
     expect(chordName(G, 'add9')).toBe('Gadd9')
+  })
+})
+
+describe('chordFullName', () => {
+  it('renders the full readable name per the phase brief example', () => {
+    expect(chordFullName(A, 'diminished')).toBe('A diminished')
+  })
+
+  it('renders a full readable name for every catalogue quality', () => {
+    for (const q of QUALITIES) {
+      expect(chordFullName(C, q.id)).toBe(`C ${q.name}`)
+    }
+  })
+})
+
+describe('isRecommendedForGenre', () => {
+  it('is true only when the quality is tagged with that genre', () => {
+    expect(isRecommendedForGenre('minor', 'Pop')).toBe(true)
+    expect(isRecommendedForGenre('minor', 'Jazz')).toBe(false)
+    expect(isRecommendedForGenre('7', 'Blues')).toBe(true)
+  })
+
+  it('is always false for "Any" — Any clears the cue, it is not a wildcard match', () => {
+    for (const q of QUALITIES) {
+      expect(isRecommendedForGenre(q.id, 'Any')).toBe(false)
+    }
+  })
+
+  it('is false for a quality untagged for any genre', () => {
+    expect(isRecommendedForGenre('major', 'Pop')).toBe(false)
+    expect(isRecommendedForGenre('major', 'Jazz')).toBe(false)
   })
 })
 

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { chordName } from './musicCore'
+import { chordFullName } from './musicCore'
 import { useSelectionStore } from './store/useSelectionStore'
 import Keyboard from './components/Keyboard'
 import RootSelector from './components/root-selector'
@@ -9,8 +9,7 @@ import ScaleFollow from './components/scale-follow'
 import ViewModeSelector from './components/view-mode-selector'
 import GenreSelector from './components/genre-selector'
 import PlaybackBar from './components/PlaybackBar'
-import VariationPanel from './components/VariationPanel'
-import Card from './components/shared/Card'
+import ChordTypeExplorer from './components/ChordTypeExplorer'
 import Select from './components/shared/Select'
 import ToggleSwitch from './components/shared/ToggleSwitch'
 import './App.css'
@@ -31,20 +30,20 @@ function App() {
   return (
     <div className="app">
       <header className="app-header">
-        <div className="app-header-titles">
-          <h1>Piano Chord Explorer</h1>
-          <p className="app-chord-name">{chordName(selection.root, selection.quality)}</p>
-        </div>
+        <h1>Piano Chord Explorer</h1>
         <ToggleSwitch
           label={theme === 'dark' ? 'Dark' : 'Light'}
           checked={theme === 'dark'}
           onChange={(dark) => setTheme(dark ? 'dark' : 'light')}
         />
       </header>
+      <h2 className="chord-title">{chordFullName(selection.root, selection.quality)}</h2>
       <main className="explore" aria-label="Explore">
-        <Card header="Musical context" className="controls-card">
+        <div className="controls-dominant">
           <RootSelector />
           <QualitySelector />
+        </div>
+        <div className="controls-secondary">
           <KeyModeSelector />
           <div className="controls-row">
             <ScaleFollow />
@@ -71,10 +70,10 @@ function App() {
             checked={showNoteNames}
             onChange={setShowNoteNames}
           />
-        </Card>
+        </div>
         <Keyboard showNoteNames={showNoteNames} />
         <PlaybackBar />
-        <VariationPanel />
+        <ChordTypeExplorer />
       </main>
     </div>
   )

@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import type { PitchClass } from '../musicCore'
-import type { QualityId, ScaleTypeId } from '../musicCore'
+import type { GenreId, QualityId, ScaleTypeId } from '../musicCore'
 
 export type ScaleMode = 'chord-root' | 'key'
 export type ViewMode = 'chord' | 'scale' | 'both'
@@ -17,8 +17,7 @@ export interface Selection {
   key: KeyContext
   scaleMode: ScaleMode
   viewMode: ViewMode
-  /** Stored for later phases; does not affect rendering yet (story-4). */
-  genre: string
+  genre: GenreId
 }
 
 export interface OctaveRange {
@@ -38,7 +37,7 @@ interface SelectionState {
   setKeyScaleType: (scaleType: ScaleTypeId) => void
   setScaleMode: (scaleMode: ScaleMode) => void
   setViewMode: (viewMode: ViewMode) => void
-  setGenre: (genre: string) => void
+  setGenre: (genre: GenreId) => void
   setOctaveRange: (startMidi: number, endMidi: number) => void
 }
 

@@ -96,12 +96,77 @@ describe('App theme wiring', () => {
     expect(container.querySelector('[data-midi="59"]')).not.toBeNull()
   })
 
-  it('selecting a variation updates the store quality and the keyboard highlights end-to-end', () => {
+  it('shows the selected chord as a prominent title using its full readable name', () => {
+    renderApp()
+    const title = container.querySelector('.chord-title')
+    expect(title?.textContent).toBe('C major')
+    act(() => {
+      useSelectionStore.getState().setRoot(9) // A
+      useSelectionStore.getState().setQuality('diminished')
+    })
+    expect(container.querySelector('.chord-title')?.textContent).toBe('A diminished')
+  })
+
+  it('places root and quality as a dominant, uncarded pair with the rest as a quieter secondary group', () => {
+    renderApp()
+    const dominant = container.querySelector('.controls-dominant')
+    const secondary = container.querySelector('.controls-secondary')
+    expect(dominant).not.toBeNull()
+    expect(secondary).not.toBeNull()
+    expect(dominant?.querySelector('[role="radiogroup"][aria-label*="Root"]')).not.toBeNull()
+    expect(dominant?.querySelector('select')).not.toBeNull() // chord quality
+    expect(secondary?.querySelector('[role="radiogroup"][aria-label*="Scale follows"]')).not.toBeNull()
+    expect(secondary?.querySelector('[role="radiogroup"][aria-label*="View mode"]')).not.toBeNull()
+    // No large bordered form card around the control area any more.
+    expect(dominant?.closest('.card')).toBeNull()
+    expect(secondary?.closest('.card')).toBeNull()
+  })
+
+  it('places the keyboard directly after the controls, and playback directly beneath the keyboard', () => {
+    renderApp()
+    const main = container.querySelector('.explore')!
+    const children = [...main.children]
+    const secondaryIdx = children.findIndex((el) => el.classList.contains('controls-secondary'))
+    const keyboardIdx = children.findIndex((el) => el.classList.contains('keyboard-wrap'))
+    const playbackIdx = children.findIndex((el) => el.classList.contains('playback-bar'))
+    expect(secondaryIdx).toBeGreaterThanOrEqual(0)
+    expect(keyboardIdx).toBe(secondaryIdx + 1)
+    expect(playbackIdx).toBe(keyboardIdx + 1)
+  })
+
+  it('changing the root note updates the title, keyboard, scale, and related-chord section immediately', () => {
+    renderApp()
+    act(() => {
+      useSelectionStore.getState().setRoot(9) // A
+    })
+    expect(container.querySelector('.chord-title')?.textContent).toBe('A major')
+    expect(container.querySelector('[data-midi="57"]')?.getAttribute('data-state')).toBe('root') // A3
+    expect(container.querySelector('.chord-explore-title')?.textContent).toBe('Explore A chord types')
+    const tileSymbols = [...container.querySelectorAll('.chord-tile-symbol')].map((el) => el.textContent)
+    expect(tileSymbols).toContain('A')
+    expect(tileSymbols).not.toContain('C')
+  })
+
+  it('changing the chord quality updates the title, keyboard, and related-chord section immediately', () => {
+    renderApp()
+    act(() => {
+      useSelectionStore.getState().setQuality('diminished')
+    })
+    expect(container.querySelector('.chord-title')?.textContent).toBe('C diminished')
+    const selectedTile = [...container.querySelectorAll<HTMLElement>('.chord-tile')].find(
+      (b) => b.getAttribute('aria-pressed') === 'true',
+    )
+    expect(selectedTile?.querySelector('.chord-tile-symbol')?.textContent).toBe('Cdim')
+    const gKey = container.querySelector<HTMLElement>('[data-midi="55"]')! // G, chord tone of C major, not of Cdim
+    expect(gKey.dataset.state).toBe('scale-note')
+  })
+
+  it('tapping a chord-type tile updates the store quality and the keyboard highlights end-to-end', () => {
     renderApp()
     const cKey = container.querySelector<HTMLElement>('[data-midi="52"]')!
     expect(cKey.dataset.state).toBe('chord-tone') // E is a chord tone of C major
-    const cmaj7 = [...container.querySelectorAll<HTMLElement>('.variation-item')].find((b) =>
-      b.textContent?.includes('Cmaj7'),
+    const cmaj7 = [...container.querySelectorAll<HTMLElement>('.chord-tile')].find((b) =>
+      b.querySelector('.chord-tile-symbol')?.textContent === 'Cmaj7',
     )
     act(() => {
       cmaj7!.click()

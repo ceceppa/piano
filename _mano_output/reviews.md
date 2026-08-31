@@ -39,3 +39,46 @@
 ### Durable learning
 
 - The root marker must carry visual weight comparable to a keyboard highlight, not a small overlaid shape — colour is already paired with shape (design principle), but the shape itself needs to read at a glance. Review surfaced this as the phase's only defect.
+
+---
+
+## Phase 2 Review — Aug 31 2026
+
+### Validation
+
+- **Result:** All five Exit Criterion groups (First load, Identification, Selection, Comparison, Playback) confirmed working. The root cue reads as legible on the keyboard. Two issues surfaced: the scale shown for at least one chord is wrong, and scale notes are hard to see on the keyboard.
+
+### Phase checks
+
+| # | Phase promise | Result | What happened |
+|---|---|---|---|
+| E1a | First load — App opens: the selected chord appears as a prominent screen title, and the keyboard is directly beneath the root/quality controls | passed | Confirmed. |
+| E2a | Identification — User glances at the keyboard: the chord root is distinguishable without relying on colour alone | passed | Confirmed; root is legible (previously needs-human, resolved by this review). |
+| E3a | Selection — User changes the root note: title, keyboard, scale, and related-chord section update immediately | passed | Confirmed; the update itself works, but the scale content it displays has a separate correctness bug (see Backlog changes). |
+| E3b | Selection — User changes the chord quality: title, keyboard, and related-chord section update immediately | passed | Confirmed. |
+| E3c | Selection — Root and quality read as dominant; display/context controls read as secondary; no large bordered form card | passed | Confirmed. |
+| E4a | Comparison — User sees "Explore [root] chord types" with chords grouped as Core / Colour / Sevenths & extensions | passed | Confirmed. |
+| E4b | Comparison — User taps a chord tile: title and keyboard update immediately, and the tile shows a clear selected state | passed | Confirmed. |
+| E4c | Comparison — User changes the genre: chord types in "Explore [root] chord types" that suit the genre show a visible, non-colour "recommended" cue; no chord type is hidden, removed, or reordered; choosing "Any" shows no recommendation cue | passed | Confirmed. |
+| E5a | Playback — User plays the chord, arpeggiates, and plays the scale from controls directly beneath the keyboard | passed | Confirmed. |
+| E5b | Playback — Play chord is the primary action; Arpeggiate and Play scale are visually secondary | passed | Confirmed. |
+
+### Decision
+
+- **Choice:** Yes — the chord-first layout makes the Explore screen a better learning and practice surface worth extending, though the keyboard could be made even clearer by placing it directly under the root-note selector rather than after the full root+quality control block.
+- **Why:** All Exit Criterion groups confirmed passing, and the root cue confirmed legible.
+
+### Assumptions
+
+| # | Assumption | Result | What showed this |
+|---|-----------|---------|------------------------|
+| A1 | The screen remains a single page with no navigation; the chord-first hierarchy works without tab/section chrome. | confirmed | Works, though the human noted the overall UI still feels a bit confusing and flagged it for a later rethink rather than this phase. |
+| A2 | A strong non-colour root cue (marker size/shape/weight) keeps the root legible without relying on colour, preserving the accessibility principle. | confirmed | "Root is legible." |
+
+### Backlog changes
+
+- [bug] Audit and fix incorrect chord scales — C augmented shows the wrong notes on the keyboard; other chord/scale pairings may share the same error.
+- [refinement] Make scale notes easier to see on the keyboard — separate from the (confirmed working) root-note cue.
+- [refinement] Revisit overall Explore screen UI clarity — layout works, but still feels a bit confusing; deferred to a later pass.
+- [feature] Show chord and scale notes beneath the keyboard — a notes panel would be easier to reference than reading markers off the keyboard.
+- [refinement] Place keyboard directly under the root-note selector — raised while confirming the phase's chord-first-layout decision.

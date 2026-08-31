@@ -16,26 +16,27 @@
   padding-bottom: 24px;
 }
 
-.app-header-titles {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
 .app-header h1 {
   font: var(--text-headline-lg-mobile);
+  font-weight: 500;
 }
 
 @media (min-width: 768px) {
   .app-header h1 {
-    font: var(--text-headline-xl);
-    letter-spacing: -0.02em;
+    font: var(--text-headline-lg);
+    font-weight: 500;
   }
 }
 
-.app-chord-name {
-  font: var(--text-notation-lg);
-  color: var(--color-on-surface-variant);
+.chord-title {
+  font: var(--text-headline-lg-mobile);
+}
+
+@media (min-width: 768px) {
+  .chord-title {
+    font: var(--text-headline-xl);
+    letter-spacing: -0.02em;
+  }
 }
 
 .explore {
@@ -63,11 +64,42 @@
   min-width: 0;
 }
 
-.controls-card .advanced-control {
-  font: var(--text-body-md);
+/* Dominant pair — design-brief §Control area (chord-first hierarchy): larger text, no card. */
+.controls-dominant {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  align-items: flex-end;
+  color: var(--color-on-surface);
 }
 
-.controls-card .advanced-control summary {
+.controls-dominant > * {
+  flex: 1 1 240px;
+  min-width: 0;
+}
+
+.controls-dominant .root-seg .seg-option,
+.controls-dominant .field select {
+  font: var(--text-notation-lg);
+}
+
+/* Secondary/context controls — quieter row, no bordered card, spacing carries hierarchy. */
+.controls-secondary {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 16px;
+  border-radius: 0.5rem;
+  background: var(--color-surface-low);
+  font: var(--text-body-sm);
+  color: var(--color-on-surface-variant);
+}
+
+.controls-secondary .advanced-control {
+  font: var(--text-body-sm);
+}
+
+.controls-secondary .advanced-control summary {
   font: var(--text-label-mono);
   letter-spacing: 0.05em;
   text-transform: uppercase;
@@ -75,13 +107,9 @@
   cursor: pointer;
 }
 
-.controls-card .advanced-control-body {
+.controls-secondary .advanced-control-body {
   display: flex;
   flex-direction: column;
   gap: 16px;
   margin-top: 16px;
-}
-
-.controls-card .root-seg .seg-option {
-  font: var(--text-notation-lg);
 }

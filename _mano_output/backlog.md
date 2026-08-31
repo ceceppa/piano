@@ -411,67 +411,102 @@
 - **Source:** phase-1 review
 - **Context:**
   The dot/diamond root marker on the keyboard is too subtle to spot at a glance; the selected chord's root needs a stronger, more visible cue so the user can immediately identify what they are studying.
-- **Status:** in-phase-2
+- **Status:** resolved
 
 ### Make the selected chord the prominent screen title
 - **Type:** refinement
 - **Source:** phase-1 review
 - **Context:**
   Replace the small subtitle under 'Piano Chord Explorer' with a prominent selected-chord heading using the full readable name (e.g. 'A diminished'). The short symbol (Adim) can remain in controls and chord-type tiles.
-- **Status:** in-phase-2
+- **Status:** resolved
 
 ### Prioritise root note and chord quality controls over display preferences
 - **Type:** refinement
 - **Source:** phase-1 review
 - **Context:**
   Root note and chord quality define what the user is studying and should be the dominant control pair, placed together at the top of the control area. Demote scale-follow, view mode, range, note names, and genre to secondary display/context controls with less visual weight.
-- **Status:** in-phase-2
+- **Status:** resolved
 
 ### Reduce the form-like feeling of the Musical Context area
 - **Type:** refinement
 - **Source:** phase-1 review
 - **Context:**
   Avoid one large bordered card with many stacked labels and controls. Use a lighter control area, short labels, fewer borders, and spacing/grouping to establish hierarchy so the interface feels like an instrument-learning workspace rather than an admin form.
-- **Status:** in-phase-2
+- **Status:** resolved
 
 ### Place the keyboard directly after the root and quality controls
 - **Type:** refinement
 - **Source:** phase-1 review
 - **Context:**
   The selected chord should visibly cause the highlighted keyboard state without a large block of settings separating selection from the result.
-- **Status:** in-phase-2
+- **Status:** resolved
 
 ### Keep playback attached beneath the keyboard with Play chord as the primary action
 - **Type:** refinement
 - **Source:** phase-1 review
 - **Context:**
   Keep [Play chord] [Arpeggiate] [Play scale] directly beneath the keyboard. Make Play chord the primary action and Arpeggiate/Play scale secondary.
-- **Status:** in-phase-2
+- **Status:** resolved
 
 ### Rename the variations section to 'Explore [root] chord types'
 - **Type:** refinement
 - **Source:** phase-1 review
 - **Context:**
   A, Am, Adim, A7, Amaj7 are not variations of Adim — they are different chord qualities sharing the root. The wording 'Explore A chord types' gives learners the correct mental model.
-- **Status:** in-phase-2
+- **Status:** resolved
 
 ### Group related chord types with the chord name visually dominant
 - **Type:** refinement
 - **Source:** phase-1 review
 - **Context:**
   Group the same chord items into Core (A, Am, Adim, Aaug), Colour (Asus2, Asus4, A6, Aadd9), and Sevenths & extensions (A7, Amaj7, Am7, A9). Descriptions can remain but the chord name should be visually dominant.
-- **Status:** in-phase-2
+- **Status:** resolved
 
 ### Replace the long single-column variation list with compact selectable tiles or a responsive grid
 - **Type:** refinement
 - **Source:** phase-1 review
 - **Context:**
   Each tile shows the chord symbol prominently, the short explanatory label more quietly, a clear selected state, and updates the title and keyboard immediately when pressed, so comparison is quicker and scrolling fatigue is reduced.
-- **Status:** in-phase-2
+- **Status:** resolved
 
 ### Do not add product navigation yet
 - **Type:** refinement
 - **Source:** phase-1 review
 - **Context:**
   Do not add a permanent sidebar for Explore, Favourites and Metronome until those are functional destinations. It would consume space and make the tool feel more complex without improving the chord-learning task.
+- **Status:** backlog
+
+### Audit and fix incorrect chord scales
+- **Type:** bug
+- **Source:** phase-2 review
+- **Context:**
+  C augmented shows C, D, E, F, G, G#, A, B on the keyboard instead of the correct C, D♯, E, G, G♯, B. This is the one confirmed instance, spotted during phase-2 review; other chord/scale pairings should be audited for the same kind of error, not just this one.
+- **Status:** backlog
+
+### Make scale notes easier to see on the keyboard
+- **Type:** refinement
+- **Source:** phase-2 review
+- **Context:**
+  Scale-tone markers on the keyboard are hard to distinguish at a glance, separate from the (confirmed working) root-note cue.
+- **Status:** backlog
+
+### Revisit overall Explore screen UI clarity
+- **Type:** refinement
+- **Source:** phase-2 review
+- **Context:**
+  The single-page chord-first layout works, but the overall UI still feels a bit confusing. Flagged for a later rethink rather than this phase.
+- **Status:** backlog
+
+### Show chord and scale notes beneath the keyboard
+- **Type:** feature
+- **Source:** phase-2 review
+- **Context:**
+  Add a panel underneath the keyboard listing the chord's notes and, when view mode allows, its scale's notes -- easier to reference than reading the keyboard markers alone.
+- **Status:** backlog
+
+### Place keyboard directly under the root-note selector
+- **Type:** refinement
+- **Source:** phase-2 review
+- **Context:**
+  Consider positioning the keyboard directly beneath the root-note selector rather than after the full root+quality control block, to make the chord root even clearer. Raised while confirming the chord-first layout decision during phase-2 review.
 - **Status:** backlog
