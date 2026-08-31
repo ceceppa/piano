@@ -1,0 +1,87 @@
+.app {
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+.app-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding-bottom: 24px;
+}
+
+.app-header-titles {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.app-header h1 {
+  font: var(--text-headline-lg-mobile);
+}
+
+@media (min-width: 768px) {
+  .app-header h1 {
+    font: var(--text-headline-xl);
+    letter-spacing: -0.02em;
+  }
+}
+
+.app-chord-name {
+  font: var(--text-notation-lg);
+  color: var(--color-on-surface-variant);
+}
+
+.explore {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+@media (max-width: 767px) {
+  .explore {
+    padding-bottom: 88px;
+  }
+}
+
+.controls-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  align-items: flex-end;
+}
+
+.controls-row > * {
+  flex: 1 1 240px;
+  min-width: 0;
+}
+
+.controls-card .advanced-control {
+  font: var(--text-body-md);
+}
+
+.controls-card .advanced-control summary {
+  font: var(--text-label-mono);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--color-on-surface-variant);
+  cursor: pointer;
+}
+
+.controls-card .advanced-control-body {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.controls-card .root-seg .seg-option {
+  font: var(--text-notation-lg);
+}

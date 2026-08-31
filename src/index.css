@@ -1,0 +1,115 @@
+:root {
+  /* Fonts — single source of truth for font-family (project-rules §Patterns — Typography).
+     Change a stack here and it re-styles the whole app. */
+  --font-display: 'Hanken Grotesk', system-ui, sans-serif;
+  --font-body: 'Inter', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+
+  /* Typography tokens (design-brief §Typography). Font shorthand = weight size/line-height family. */
+  --text-headline-xl: 700 40px/48px var(--font-display);
+  --text-headline-lg: 600 32px/40px var(--font-display);
+  --text-headline-lg-mobile: 600 24px/32px var(--font-display);
+  --text-body-md: 400 16px/24px var(--font-body);
+  --text-body-sm: 400 14px/20px var(--font-body);
+  --text-label-mono: 500 13px/16px var(--font-mono);
+  --text-notation-lg: 600 20px/28px var(--font-mono);
+
+  color-scheme: light dark;
+  font: var(--text-body-md);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+:root[data-theme='light'] {
+  color-scheme: light;
+  --color-background: #f8f9fa;
+  --color-surface: #ffffff;
+  --color-surface-low: #f3f4f5;
+  --color-surface-high: #e7e8e9;
+  --color-on-surface: #191c1d;
+  --color-on-surface-variant: #45474b;
+  --color-primary: #02040a;
+  --color-on-primary: #ffffff;
+  --color-secondary: #0040e0;
+  --color-on-secondary: #ffffff;
+  --color-tertiary: #735c00;
+  --color-on-tertiary: #ffffff;
+  --color-error: #ba1a1a;
+  --color-outline: #76777c;
+  --color-outline-variant: #c6c6cb;
+  --color-key-white: #ffffff;
+  --color-key-black: #121417;
+  --color-scale-tone-muted: #e2e8f0;
+  --color-highlight-teal: #00b4d8;
+  --color-success-green: #22c55e;
+  --color-marker-stroke: #4e3d00;
+  --color-key-active: #dde1ff;
+
+  /* Legacy aliases so components keep rendering until their restyle story lands. */
+  --text: var(--color-on-surface);
+  --text-h: var(--color-on-surface);
+  --bg: var(--color-background);
+  --border: var(--color-outline-variant);
+  --accent: var(--color-secondary);
+  --mono: var(--font-mono);
+  --key-white: var(--color-key-white);
+  --key-black: var(--color-key-black);
+  --chord-tone-bg: var(--color-scale-tone-muted);
+  --scale-note-bg: var(--color-scale-tone-muted);
+  --border-strong: var(--color-outline);
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --color-background: #202224;
+  --color-surface: #26282a;
+  --color-surface-low: #2b2d2f;
+  --color-surface-high: #36383a;
+  --color-on-surface: #e1e3e4;
+  --color-on-surface-variant: #c6c8c9;
+  --color-primary: #c3c6d1;
+  --color-on-primary: #1a1e26;
+  --color-secondary: #b8c3ff;
+  --color-on-secondary: #0035be;
+  --color-tertiary: #e9c349;
+  --color-on-tertiary: #4e3d00;
+  --color-error: #ffb4ab;
+  --color-outline: #8f9293;
+  --color-outline-variant: #45474b;
+  --color-key-white: #f1f2f2;
+  --color-key-black: #0d0e0f;
+  --color-scale-tone-muted: #3c3e41;
+  --color-highlight-teal: #00b4d8;
+  --color-success-green: #22c55e;
+  --color-marker-stroke: #4e3d00;
+  --color-key-active: #2e5bff;
+
+  /* Legacy aliases so components keep rendering until their restyle story lands. */
+  --text: var(--color-on-surface);
+  --text-h: var(--color-on-surface);
+  --bg: var(--color-background);
+  --border: var(--color-outline-variant);
+  --accent: var(--color-secondary);
+  --mono: var(--font-mono);
+  --key-white: var(--color-key-white);
+  --key-black: var(--color-key-black);
+  --chord-tone-bg: var(--color-scale-tone-muted);
+  --scale-note-bg: var(--color-scale-tone-muted);
+  --border-strong: var(--color-outline);
+}
+
+body {
+  margin: 0;
+  background: var(--color-background);
+  color: var(--color-on-surface);
+}
+
+h1,
+h2 {
+  color: var(--color-on-surface);
+  margin: 0;
+}
+
+p {
+  margin: 0;
+}

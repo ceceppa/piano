@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Piano Chord Explorer — Explore (phase-1 preview)</title>
+<style>
+  :root[data-theme='light'] {
+    --background:#F8F9FA; --surface:#FFFFFF; --surface-low:#F3F4F5; --surface-high:#E7E8E9;
+    --on-surface:#191C1D; --on-surface-variant:#45474B; --primary:#02040A; --on-primary:#FFFFFF;
+    --secondary:#0040E0; --on-secondary:#FFFFFF; --tertiary:#735C00; --on-tertiary:#FFFFFF;
+    --error:#BA1A1A; --outline:#76777C; --outline-variant:#C6C6CB;
+    --key-white:#FFFFFF; --key-black:#121417; --scale-tone-muted:#E2E8F0;
+    --active-tint:#DDE1FF; --active-fill:#2E5BFF;
+  }
+  :root[data-theme='dark'] {
+    --background:#202224; --surface:#26282A; --surface-low:#2B2D2F; --surface-high:#36383A;
+    --on-surface:#E1E3E4; --on-surface-variant:#C6C8C9; --primary:#C3C6D1; --on-primary:#1A1E26;
+    --secondary:#B8C3FF; --on-secondary:#0035BE; --tertiary:#E9C349; --on-tertiary:#4E3D00;
+    --error:#FFB4AB; --outline:#8F9293; --outline-variant:#45474B;
+    --key-white:#F1F2F2; --key-black:#0D0E0F; --scale-tone-muted:#3C3E41;
+    --active-tint:#2E5BFF; --active-fill:#2E5BFF;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--background); color: var(--on-surface);
+    font-family: Inter, system-ui, sans-serif; font-size: 16px; line-height: 24px;
+  }
+  .mono { font-family: 'JetBrains Mono', ui-monospace, monospace; }
+  .page { max-width: 1280px; margin: 0 auto; padding: 24px 24px 120px; }
+
+  /* Header */
+  .header { display: flex; justify-content: space-between; align-items: flex-end; gap: 24px; padding: 48px 0 8px; flex-wrap: wrap; }
+  .header h1 {
+    font-family: 'Hanken Grotesk', system-ui, sans-serif; font-size: 40px; line-height: 48px; font-weight: 700;
+    letter-spacing: -0.02em; margin: 0;
+  }
+  .chord-name { font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 20px; font-weight: 600; margin-top: 8px; }
+  .theme-switch { display: inline-flex; align-items: center; gap: 8px; }
+  .switch { position: relative; width: 44px; height: 24px; }
+  .switch input { opacity: 0; width: 0; height: 0; position: absolute; }
+  .switch .track { position: absolute; inset: 0; border-radius: 9999px; background: var(--surface-high); border: 1px solid var(--outline-variant); transition: 0.15s; }
+  .switch .knob { position: absolute; top: 3px; left: 3px; width: 18px; height: 18px; border-radius: 50%; background: var(--surface); border: 1px solid var(--outline-variant); transition: 0.15s; }
+  .switch input:checked ~ .track { background: var(--secondary); }
+  .switch input:checked ~ .knob { transform: translateX(20px); }
+  .switch input:focus-visible ~ .track { outline: 2px solid var(--secondary); outline-offset: 2px; }
+  .switch-label { font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 13px; letter-spacing: 0.05em; text-transform: uppercase; color: var(--on-surface-variant); }
+
+  /* Card */
+  .card { background: var(--surface); border: 1px solid var(--outline-variant); border-radius: 12px; padding: 20px; }
+  .card h3 {
+    font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 13px; line-height: 16px; font-weight: 500;
+    letter-spacing: 0.05em; text-transform: uppercase; color: var(--on-surface-variant); margin: 0 0 16px;
+  }
+  .label { display: block; font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 13px; letter-spacing: 0.05em; color: var(--on-surface); margin: 0 0 8px; }
+
+  /* Segmented control */
+  .segmented { display: flex; gap: 4px; flex-wrap: wrap; }
+  .seg { border: 1px solid var(--outline-variant); border-radius: 4px; padding: 8px 10px; font: inherit; background: var(--surface); color: var(--on-surface); cursor: pointer; }
+  .seg.selected { background: var(--primary); color: var(--on-primary); border-color: var(--primary); }
+  .seg.selected.cue { background: var(--surface-high); color: var(--on-surface); border-bottom: 2px solid var(--secondary); }
+  .seg:focus-visible { outline: 2px solid var(--secondary); outline-offset: -2px; }
+
+  /* Select */
+  select { width: 100%; padding: 8px 10px; border: 1px solid var(--outline-variant); border-radius: 4px; background: var(--surface); color: var(--on-surface); font: inherit; }
+  select:focus-visible { outline: 2px solid var(--secondary); outline-offset: -1px; }
+
+  /* Buttons */
+  .btn { border-radius: 4px; padding: 8px 16px; font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 13px; letter-spacing: 0.05em; cursor: pointer; }
+  .btn:focus-visible { outline: 2px solid var(--secondary); outline-offset: 2px; }
+  .btn-primary { background: var(--primary); color: var(--on-primary); border: 1px solid var(--primary); }
+  .btn-ghost { background: transparent; color: var(--on-surface); border: 1px solid var(--outline-variant); }
+  .btn-round { width: 48px; height: 48px; border-radius: 50%; background: var(--primary); color: var(--on-primary); border: none; font-size: 20px; cursor: pointer; }
+
+  /* Chips */
+  .chip { display: inline-block; padding: 2px 10px; border-radius: 9999px; background: var(--surface-low); border: 1px solid var(--outline-variant); color: var(--on-surface); font-size: 14px; }
+
+  /* Keyboard */
+  .keyboard-band { background: var(--surface); border-top: 1px solid var(--outline-variant); border-bottom: 1px solid var(--outline-variant); padding: 32px 0; margin: 24px 0; overflow-x: auto; }
+  .keys { display: flex; justify-content: center; min-width: max-content; position: relative; }
+  .white { position: relative; width: 48px; height: 180px; background: var(--key-white); border: 1px solid var(--outline-variant); border-radius: 0 0 4px 4px; margin-right: -1px; }
+  .white.active { background: var(--active-tint); border-color: var(--secondary); }
+  .white.root { background: var(--active-tint); border: 3px double var(--secondary); }
+  .blacks { position: absolute; inset: 0; pointer-events: none; }
+  .black { position: absolute; top: 0; width: 32px; height: 99px; margin-left: -16px; background: var(--key-black); border-radius: 0 0 3px 3px; }
+  .marker { position: absolute; bottom: 12px; left: 50%; transform: translateX(-50%); }
+  .marker.dot { width: 12px; height: 12px; border-radius: 50%; background: var(--secondary); }
+  .marker.diamond { width: 14px; height: 14px; background: var(--tertiary); clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%); }
+  .marker.ring { width: 14px; height: 14px; border-radius: 50%; border: 2px solid rgba(0,64,224,0.3); }
+
+  /* Layout */
+  .grid { display: grid; grid-template-columns: 8fr 4fr; gap: 16px; margin-top: 24px; }
+  .col { display: flex; flex-direction: column; gap: 16px; }
+  .controls-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+  .playback { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+  .status { font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 13px; letter-spacing: 0.05em; text-transform: uppercase; color: var(--on-surface-variant); }
+  .variation-row { display: flex; justify-content: space-between; align-items: center; padding: 12px; border: 1px solid var(--outline-variant); border-radius: 4px; margin-bottom: 8px; cursor: pointer; }
+  .variation-row.selected { background: var(--surface-high); border-left: 3px solid var(--secondary); }
+  .variation-name { font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 20px; font-weight: 600; }
+  .right-rail .card { position: sticky; top: 24px; }
+
+  @media (max-width: 800px) {
+    .grid { grid-template-columns: 1fr; }
+    .controls-grid { grid-template-columns: 1fr; }
+    .header h1 { font-size: 24px; line-height: 32px; }
+    .playback { position: fixed; bottom: 0; left: 0; right: 0; background: var(--surface); border-top: 1px solid var(--outline-variant); padding: 12px 24px; z-index: 10; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+  <header class="header">
+    <div>
+      <h1>Piano Chord Explorer</h1>
+      <div class="chord-name">C · major</div>
+    </div>
+    <label class="theme-switch">
+      <span class="switch-label">Dark</span>
+      <span class="switch">
+        <input type="checkbox" id="theme-toggle" aria-label="Toggle dark mode"/>
+        <span class="track"></span>
+        <span class="knob"></span>
+      </span>
+      <span class="switch-label">Light</span>
+    </label>
+  </header>
+
+  <section class="keyboard-band" aria-label="Piano keyboard, C major">
+    <div class="keys">
+      <div class="white active"><span class="marker diamond"></span></div>
+      <div class="white"><span class="marker ring"></span></div>
+      <div class="white active"><span class="marker dot"></span></div>
+      <div class="white"><span class="marker ring"></span></div>
+      <div class="white active"><span class="marker dot"></span></div>
+      <div class="white"><span class="marker ring"></span></div>
+      <div class="white"><span class="marker ring"></span></div>
+      <div class="white"><span class="marker dot"></span></div>
+      <div class="white"><span class="marker ring"></span></div>
+      <div class="white active"><span class="marker dot"></span></div>
+      <div class="white"><span class="marker ring"></span></div>
+      <div class="white"><span class="marker ring"></span></div>
+        <div class="blacks">
+          <div class="black" style="left:48px"></div>
+          <div class="black" style="left:96px"></div>
+          <div class="black" style="left:192px"></div>
+          <div class="black" style="left:240px"></div>
+          <div class="black" style="left:288px"></div>
+          <div class="black" style="left:384px"></div>
+          <div class="black" style="left:432px"></div>
+          <div class="black" style="left:528px"></div>
+        </div>
+    </div>
+  </section>
+
+  <div class="grid">
+    <div class="col">
+      <section class="card" aria-label="Musical context">
+        <h3>Musical Context</h3>
+        <div class="controls-grid">
+          <div>
+            <span class="label">Root Note</span>
+            <div class="segmented">
+              <button class="seg selected" type="button">C</button>
+              <button class="seg" type="button">C♯</button>
+              <button class="seg" type="button">D</button>
+              <button class="seg" type="button">E♭</button>
+              <button class="seg" type="button">E</button>
+              <button class="seg" type="button">F</button>
+              <button class="seg" type="button">F♯</button>
+              <button class="seg" type="button">G</button>
+              <button class="seg" type="button">A♭</button>
+              <button class="seg" type="button">A</button>
+              <button class="seg" type="button">B♭</button>
+              <button class="seg" type="button">B</button>
+            </div>
+          </div>
+          <div>
+            <span class="label">Quality</span>
+            <select>
+              <option selected>Major</option>
+              <option>Minor</option>
+              <option>Diminished</option>
+              <option>Augmented</option>
+              <option>Sus2</option>
+              <option>Sus4</option>
+              <option>6</option>
+              <option>7</option>
+              <option>Major 7</option>
+              <option>Minor 7</option>
+              <option>9</option>
+              <option>Add9</option>
+            </select>
+          </div>
+        </div>
+        <div style="margin-top:16px">
+          <span class="label">Scale follows</span>
+          <div class="segmented">
+            <button class="seg selected cue" type="button">Chord root</button>
+            <button class="seg" type="button">Selected key</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="card" aria-label="Playback">
+        <h3>Playback</h3>
+        <div class="playback">
+          <button class="btn-round" type="button" aria-label="Play chord">▶</button>
+          <button class="btn btn-ghost" type="button">Play chord</button>
+          <button class="btn btn-ghost" type="button">Arpeggiate</button>
+          <button class="btn btn-ghost" type="button">Play scale</button>
+          <span class="status">Ready</span>
+        </div>
+      </section>
+
+      <section class="card" aria-label="Chord variations">
+        <h3>Variations</h3>
+        <div class="variation-row selected">
+          <span class="variation-name">C6</span>
+          <span class="chip">Popular Jazz</span>
+        </div>
+        <div class="variation-row">
+          <span class="variation-name">C7</span>
+          <span class="chip">Common in Blues</span>
+        </div>
+        <div class="variation-row">
+          <span class="variation-name">Cmaj7</span>
+          <span class="chip">Popular Jazz</span>
+        </div>
+        <div class="variation-row">
+          <span class="variation-name">Cadd9</span>
+          <span class="chip">Common in Pop</span>
+        </div>
+      </section>
+    </div>
+
+    <div class="col right-rail">
+      <section class="card" aria-label="Progressions placeholder">
+        <h3>Progressions <span style="font-size:14px">— later phase</span></h3>
+        <p style="color:var(--on-surface-variant);font-size:14px;margin:0">Chord progressions arrive in a later phase. This rail keeps the desktop grid stable.</p>
+      </section>
+    </div>
+  </div>
+</div>
+
+<script>
+  const toggle = document.getElementById('theme-toggle');
+  const apply = (dark) => {
+    document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
+    toggle.checked = dark;
+  };
+  const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+  apply(prefersDark);
+  toggle.addEventListener('change', () => apply(toggle.checked));
+</script>
+</body>
+</html>

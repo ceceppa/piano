@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Piano Chord Explorer — Phase 2 chord-first layout preview</title>
+<style>
+  :root {
+    --color-background: #F8F9FA;
+    --color-surface: #FFFFFF;
+    --color-surface-low: #F3F4F5;
+    --color-surface-high: #E7E8E9;
+    --color-on-surface: #191C1D;
+    --color-on-surface-variant: #45474B;
+    --color-primary: #02040A;
+    --color-on-primary: #FFFFFF;
+    --color-secondary: #0040E0;
+    --color-on-secondary: #FFFFFF;
+    --color-tertiary: #735C00;
+    --color-on-tertiary: #FFFFFF;
+    --color-outline: #76777C;
+    --color-outline-variant: #C6C6CB;
+    --color-key-white: #FFFFFF;
+    --color-key-black: #121417;
+    --color-key-active: #DDE1FF;
+    --font-display: "Hanken Grotesk", system-ui, sans-serif;
+    --font-body: "Inter", system-ui, sans-serif;
+    --font-mono: "JetBrains Mono", ui-monospace, monospace;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--color-background); color: var(--color-on-surface); font-family: var(--font-body); }
+  .page { max-width: 1280px; margin: 0 auto; padding: 0 24px 96px; }
+
+  .header { display: flex; justify-content: space-between; align-items: center; padding: 20px 0 0; }
+  .header h1 { font-family: var(--font-display); font-size: 24px; line-height: 32px; font-weight: 600; margin: 0; color: var(--color-on-surface-variant); }
+  .switch { display: flex; align-items: center; gap: 8px; font-size: 14px; color: var(--color-on-surface-variant); }
+  .switch .track { display: inline-block; width: 40px; height: 20px; border-radius: 9999px; background: var(--color-surface-high); position: relative; }
+  .switch .knob { position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; border-radius: 50%; background: var(--color-surface); box-shadow: 0 1px 2px rgba(0,0,0,0.2); }
+
+  .chord-title { font-family: var(--font-display); font-size: 40px; line-height: 48px; font-weight: 700; letter-spacing: -0.02em; margin: 16px 0 4px; }
+  .chord-meta { font-family: var(--font-mono); font-size: 13px; color: var(--color-on-surface-variant); margin: 0 0 20px; }
+
+  .control-primary { display: flex; gap: 24px; align-items: flex-end; margin: 24px 0 8px; flex-wrap: wrap; }
+  .field label { display: block; font-family: var(--font-mono); font-size: 13px; font-weight: 500; color: var(--color-on-surface-variant); margin-bottom: 6px; }
+  .root-row { display: flex; gap: 2px; }
+  .root-row .key { min-width: 40px; height: 40px; border: 1px solid var(--color-outline-variant); background: var(--color-surface); font-family: var(--font-mono); font-size: 18px; cursor: pointer; }
+  .root-row .key.selected { background: var(--color-primary); color: var(--color-on-primary); border-color: var(--color-primary); }
+  select { height: 40px; padding: 0 12px; border: 1px solid var(--color-outline-variant); background: var(--color-surface); font: var(--font-body); color: var(--color-on-surface); }
+
+  .control-secondary { display: flex; gap: 20px; flex-wrap: wrap; padding: 10px 0; font-size: 14px; color: var(--color-on-surface-variant); border-top: 1px solid var(--color-outline-variant); border-bottom: 1px solid var(--color-outline-variant); }
+  .control-secondary .seg { background: var(--color-surface-low); border: 1px solid transparent; padding: 6px 12px; cursor: pointer; font-size: 14px; }
+  .control-secondary .seg.selected { background: var(--color-primary); color: var(--color-on-primary); }
+  .control-secondary select { height: 32px; font-size: 14px; }
+
+  .keyboard-band { margin-top: 8px; background: var(--color-surface); border-top: 1px solid var(--color-outline-variant); border-bottom: 1px solid var(--color-outline-variant); padding: 24px 0; }
+  .keys { display: flex; justify-content: center; min-width: max-content; position: relative; }
+  .white { position: relative; width: 48px; height: 180px; background: var(--color-key-white); border: 1px solid var(--color-outline-variant); border-radius: 0 0 4px 4px; margin-right: -1px; }
+  .white.active { background: var(--color-key-active); }
+  .white.root-cue { border: 3px double var(--color-secondary); }
+  .marker { position: absolute; bottom: 24px; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; }
+  .marker.diamond { width: 18px; height: 18px; background: var(--color-tertiary); clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%); border: none; box-shadow: 0 0 0 2px #4E3D00; }
+  .marker.dot { width: 12px; height: 12px; border-radius: 50%; background: var(--color-secondary); }
+  .blacks { position: absolute; inset: 0; pointer-events: none; }
+  .black { position: absolute; top: 0; width: 32px; height: 99px; margin-left: -16px; background: var(--color-key-black); border-radius: 0 0 3px 3px; }
+
+  .playback { display: flex; align-items: center; gap: 12px; margin-top: 20px; flex-wrap: wrap; }
+  .btn { height: 40px; padding: 0 16px; border-radius: 0.25rem; font-family: var(--font-mono); font-size: 13px; font-weight: 500; letter-spacing: 0.05em; cursor: pointer; }
+  .btn.primary { background: var(--color-primary); color: var(--color-on-primary); border: 1px solid var(--color-primary); }
+  .btn.ghost { background: transparent; color: var(--color-on-surface); border: 1px solid var(--color-outline-variant); }
+  .status { margin-left: auto; font-family: var(--font-mono); font-size: 13px; color: var(--color-on-surface-variant); letter-spacing: 0.05em; }
+
+  .types-section { margin-top: 32px; }
+  .types-section h2 { font-family: var(--font-display); font-size: 32px; line-height: 40px; font-weight: 600; letter-spacing: -0.01em; margin: 0 0 16px; }
+  .group-title { font-family: var(--font-mono); font-size: 13px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em; color: var(--color-on-surface-variant); margin: 16px 0 8px; }
+  .tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 8px; }
+  .tile { min-height: 88px; background: var(--color-surface-low); border: 1px solid var(--color-outline-variant); border-radius: 0.25rem; display: flex; flex-direction: column; justify-content: center; align-items: center; cursor: pointer; }
+  .tile .sym { font-family: var(--font-mono); font-size: 20px; font-weight: 600; color: var(--color-on-surface); }
+  .tile .lbl { font-size: 14px; color: var(--color-on-surface-variant); }
+  .tile.selected { background: var(--color-secondary); border: 2px solid var(--color-secondary); }
+  .tile.selected .sym, .tile.selected .lbl { color: var(--color-on-secondary); }
+</style>
+</head>
+<body>
+<div class="page">
+  <header class="header">
+    <h1>Piano Chord Explorer</h1>
+    <div class="switch" role="switch" aria-label="Toggle dark mode" aria-checked="false">
+      <span>Dark</span><span class="track"><span class="knob"></span></span><span>Light</span>
+    </div>
+  </header>
+
+  <h2 class="chord-title">A diminished</h2>
+  <p class="chord-meta">Adim · A, C, E♭</p>
+
+  <div class="control-primary">
+    <div class="field">
+      <label>Root note</label>
+      <div class="root-row" role="group" aria-label="Root note">
+        <button class="key">C</button>
+        <button class="key">C♯</button>
+        <button class="key">D</button>
+        <button class="key">D♯</button>
+        <button class="key">E</button>
+        <button class="key">F</button>
+        <button class="key">F♯</button>
+        <button class="key">G</button>
+        <button class="key">G♯</button>
+        <button class="key selected">A</button>
+        <button class="key">A♯</button>
+        <button class="key">B</button>
+      </div>
+    </div>
+    <div class="field">
+      <label for="quality">Chord quality</label>
+      <select id="quality">
+        <option>major</option>
+        <option>minor</option>
+        <option selected>diminished</option>
+        <option>augmented</option>
+        <option>sus2</option>
+        <option>sus4</option>
+        <option>6</option>
+        <option>7</option>
+        <option>maj7</option>
+        <option>m7</option>
+        <option>9</option>
+        <option>add9</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="control-secondary">
+    <span>View:</span>
+    <button class="seg">Chord</button>
+    <button class="seg">Scale</button>
+    <button class="seg selected">Both</button>
+    <span>Scale:</span>
+    <select aria-label="Scale follows"><option selected>Chord root</option><option>Selected key</option></select>
+    <span>Range:</span>
+    <select aria-label="Keyboard range"><option selected>2 octaves</option></select>
+    <span>Note names:</span>
+    <select aria-label="Note names"><option>Off</option><option selected>On</option></select>
+    <span>Genre:</span>
+    <select aria-label="Genre"><option selected>Pop</option><option>Rock</option></select>
+  </div>
+
+  <section class="keyboard-band" aria-label="Piano keyboard, A diminished">
+    <div class="keys">
+      <div class="white root-cue"><div class="marker diamond"></div></div>
+      <div class="white"><div class="marker dot"></div></div>
+      <div class="white odd"><div class="marker dot"></div></div>
+      <div class="white"><div class="marker dot"></div></div>
+      <div class="white"><div class="marker dot"></div></div>
+      <div class="white"><div class="marker"></div></div>
+      <div class="white"><div class="marker"></div></div>
+      <div class="white"><div class="marker dot"></div></div>
+      <div class="white"><div class="marker dot"></div></div>
+      <div class="white"><div class="marker"></div></div>
+      <div class="white"><div class="marker"></div></div>
+      <div class="white"><div class="marker"></div></div>
+      <div class="white"><div class="marker dot"></div></div>
+      <div class="white"><div class="marker dot"></div></div>
+      <div class="blacks">
+        <div class="black" style="left:48px"></div>
+        <div class="black" style="left:96px"></div>
+        <div class="black" style="left:192px"></div>
+        <div class="black" style="left:240px"></div>
+        <div class="black" style="left:288px"></div>
+        <div class="black" style="left:384px"></div>
+        <div class="black" style="left:432px"></div>
+        <div class="black" style="left:528px"></div>
+        <div class="black" style="left:576px"></div>
+        <div class="black" style="left:672px"></div>
+      </div>
+    </div>
+  </section>
+
+  <div class="playback">
+    <button class="btn primary">Play chord</button>
+    <button class="btn ghost">Arpeggiate</button>
+    <button class="btn ghost">Play scale</button>
+    <span class="status">READY</span>
+  </div>
+
+  <section class="types-section" aria-label="Explore A chord types">
+    <h2>Explore A chord types</h2>
+
+    <div class="group-title">Core</div>
+    <div class="tiles">
+      <div class="tile"><span class="sym">A</span><span class="lbl">Major</span></div>
+      <div class="tile"><span class="sym">Am</span><span class="lbl">Minor</span></div>
+      <div class="tile selected"><span class="sym">Adim</span><span class="lbl">Diminished</span></div>
+      <div class="tile"><span class="sym">Aaug</span><span class="lbl">Augmented</span></div>
+    </div>
+
+    <div class="group-title">Colour</div>
+    <div class="tiles">
+      <div class="tile"><span class="sym">Asus2</span><span class="lbl">Suspended 2nd</span></div>
+      <div class="tile"><span class="sym">Asus4</span><span class="lbl">Suspended 4th</span></div>
+      <div class="tile"><span class="sym">A6</span><span class="lbl">Major 6th</span></div>
+      <div class="tile"><span class="sym">Aadd9</span><span class="lbl">Added 9th</span></div>
+    </div>
+
+    <div class="group-title">Sevenths &amp; extensions</div>
+    <div class="tiles">
+      <div class="tile"><span class="sym">A7</span><span class="lbl">Dominant 7th</span></div>
+      <div class="tile"><span class="sym">Amaj7</span><span class="lbl">Major 7th</span></div>
+      <div class="tile"><span class="sym">Am7</span><span class="lbl">Minor 7th</span></div>
+      <div class="tile"><span class="sym">A9</span><span class="lbl">Ninth</span></div>
+    </div>
+  </section>
+</div>
+</body>
+</html>

@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Metronome - Piano Harmony Explorer</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@600;700&amp;family=Inter:wght@400&amp;family=JetBrains+Mono:wght@500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "key-white": "#FFFFFF",
+                      "success-green": "#22C55E",
+                      "inverse-surface": "#2e3132",
+                      "secondary-fixed": "#dde1ff",
+                      "surface-tint": "#5b5e68",
+                      "surface-variant": "#e1e3e4",
+                      "tertiary": "#735c00",
+                      "error-container": "#ffdad6",
+                      "highlight-teal": "#00B4D8",
+                      "outline-variant": "#c6c6cb",
+                      "on-error-container": "#93000a",
+                      "on-secondary-container": "#efefff",
+                      "background": "#f8f9fa",
+                      "tertiary-fixed-dim": "#e9c349",
+                      "secondary-fixed-dim": "#b8c3ff",
+                      "on-tertiary-fixed": "#241a00",
+                      "error": "#ba1a1a",
+                      "on-surface": "#191c1d",
+                      "tertiary-container": "#cba72f",
+                      "on-secondary-fixed": "#001356",
+                      "on-primary": "#ffffff",
+                      "surface-container-highest": "#e1e3e4",
+                      "on-tertiary-fixed-variant": "#574500",
+                      "primary-container": "#1a1e26",
+                      "surface": "#f8f9fa",
+                      "key-black": "#121417",
+                      "on-secondary": "#ffffff",
+                      "on-error": "#ffffff",
+                      "surface-bright": "#f8f9fa",
+                      "secondary": "#0040e0",
+                      "inverse-primary": "#c3c6d1",
+                      "on-primary-fixed-variant": "#434750",
+                      "outline": "#76777c",
+                      "surface-dim": "#d9dadb",
+                      "scale-tone-muted": "#E2E8F0",
+                      "surface-container-high": "#e7e8e9",
+                      "on-primary-fixed": "#181c24",
+                      "on-tertiary-container": "#4e3d00",
+                      "surface-container": "#edeeef",
+                      "on-tertiary": "#ffffff",
+                      "on-surface-variant": "#45474b",
+                      "on-background": "#191c1d",
+                      "on-primary-container": "#828690",
+                      "on-secondary-fixed-variant": "#0035be",
+                      "surface-container-lowest": "#ffffff",
+                      "primary": "#02040a",
+                      "inverse-on-surface": "#f0f1f2",
+                      "secondary-container": "#2e5bff",
+                      "surface-container-low": "#f3f4f5",
+                      "primary-fixed": "#dfe2ed",
+                      "tertiary-fixed": "#ffe088",
+                      "primary-fixed-dim": "#c3c6d1"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.125rem",
+                      "lg": "0.25rem",
+                      "xl": "0.5rem",
+                      "full": "0.75rem"
+              },
+              "spacing": {
+                      "keyboard-height-desktop": "240px",
+                      "container-margin": "24px",
+                      "keyboard-height-mobile": "180px",
+                      "base": "8px",
+                      "card-padding": "20px",
+                      "gutter": "16px"
+              },
+              "fontFamily": {
+                      "body-md": [
+                              "Inter"
+                      ],
+                      "body-sm": [
+                              "Inter"
+                      ],
+                      "headline-lg": [
+                              "Hanken Grotesk"
+                      ],
+                      "notation-lg": [
+                              "JetBrains Mono"
+                      ],
+                      "headline-lg-mobile": [
+                              "Hanken Grotesk"
+                      ],
+                      "label-mono": [
+                              "JetBrains Mono"
+                      ],
+                      "headline-xl": [
+                              "Hanken Grotesk"
+                      ]
+              },
+              "fontSize": {
+                      "body-md": [
+                              "16px",
+                              {
+                                      "lineHeight": "24px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "body-sm": [
+                              "14px",
+                              {
+                                      "lineHeight": "20px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "headline-lg": [
+                              "32px",
+                              {
+                                      "lineHeight": "40px",
+                                      "letterSpacing": "-0.01em",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "notation-lg": [
+                              "20px",
+                              {
+                                      "lineHeight": "28px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "headline-lg-mobile": [
+                              "24px",
+                              {
+                                      "lineHeight": "32px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "label-mono": [
+                              "13px",
+                              {
+                                      "lineHeight": "16px",
+                                      "letterSpacing": "0.05em",
+                                      "fontWeight": "500"
+                              }
+                      ],
+                      "headline-xl": [
+                              "40px",
+                              {
+                                      "lineHeight": "48px",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "700"
+                              }
+                      ]
+              }
+      },
+          },
+        }
+      </script>
+<style>
+        .pulse-ring {
+            animation: pulse-animation 2s infinite cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+        @keyframes pulse-animation {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(0, 64, 224, 0.4); }
+            70% { transform: scale(1); box-shadow: 0 0 0 40px rgba(0, 64, 224, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(0, 64, 224, 0); }
+        }
+    </style>
+</head>
+<body class="bg-surface text-on-surface font-body-md min-h-screen flex flex-col md:flex-row pb-[72px] md:pb-0">
+<!-- Top Navigation (Mobile Only) -->
+<header class="md:hidden flex justify-between items-center w-full px-container-margin py-4 max-w-[1280px] mx-auto bg-key-white dark:bg-key-black border-b border-outline-variant dark:border-outline">
+<div class="font-headline-lg-mobile text-headline-lg-mobile font-bold text-primary dark:text-key-white">
+            Piano Harmony Explorer
+        </div>
+<div class="flex gap-4">
+<span class="material-symbols-outlined cursor-pointer active:opacity-70 text-on-surface-variant dark:text-surface-variant hover:text-secondary dark:hover:text-secondary-fixed transition-colors" data-icon="settings">settings</span>
+<span class="material-symbols-outlined cursor-pointer active:opacity-70 text-on-surface-variant dark:text-surface-variant hover:text-secondary dark:hover:text-secondary-fixed transition-colors" data-icon="person">person</span>
+</div>
+</header>
+<!-- SideNavBar (Desktop Only) -->
+<aside class="hidden lg:flex flex-col h-full py-6 w-64 bg-key-white dark:bg-key-black border-r border-outline-variant dark:border-outline fixed left-0 z-40">
+<div class="px-6 mb-8">
+<div class="font-headline-lg-mobile text-headline-lg-mobile font-bold text-primary dark:text-key-white mb-2">
+                Studio Workspace
+            </div>
+<div class="font-label-mono text-label-mono text-on-surface-variant dark:text-surface-variant flex items-center gap-2">
+<img class="w-6 h-6 rounded-full object-cover" data-alt="A small circular avatar placeholder image showing a minimalistic silhouette in a light grey circle on a white background, suggesting a user profile picture slot in a modern UI design. High key lighting, clean." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBHT-cZw0WY1lXLwNDtpaXXQuvKsefcV5O_CQ2iSpEn9nPyBJLFg9_s4c4nZCB7YTj9UuHJtoKq-WLcK6ZkV0qGvRlhMKLvnu0ukReiY-w34je_FsAXIfwBwLvpnEqBl1_Yu7Ss9mZGi1YrM-zDFZV3-ykzgDxcJHnaLaYTEU4pHMaTIq6KguZC-t2e2ddER2t3cDJKzx75ypfxWVQH2frEPb9ktB5ZkQ7KbTaYEIkh3P67Iwwhv9GpYw"/>
+                Pro Account
+            </div>
+</div>
+<nav class="flex-1 flex flex-col gap-2 px-4 font-label-mono text-label-mono">
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant dark:text-surface-variant hover:bg-surface-container-low dark:hover:bg-inverse-surface transition-all cursor-pointer active:scale-95 duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="keyboard">keyboard</span>
+                Explore
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant dark:text-surface-variant hover:bg-surface-container-low dark:hover:bg-inverse-surface transition-all cursor-pointer active:scale-95 duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="favorite">favorite</span>
+                Favorites
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-secondary dark:text-secondary-fixed font-bold border-r-4 border-secondary dark:border-secondary-fixed cursor-pointer active:scale-95 duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="metronome" style="font-variation-settings: 'FILL' 1;">file_map_stack</span>
+                Metronome
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant dark:text-surface-variant hover:bg-surface-container-low dark:hover:bg-inverse-surface transition-all cursor-pointer active:scale-95 duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+                Settings
+            </a>
+</nav>
+</aside>
+<!-- Main Content Canvas -->
+<main class="flex-1 lg:ml-64 flex flex-col items-center justify-center p-container-margin md:p-8 min-h-[calc(100vh-72px)] md:min-h-screen">
+<div class="w-full max-w-4xl grid grid-cols-1 md:grid-cols-12 gap-8 items-center">
+<!-- Central Metronome Display (Left Column Desktop, Top Mobile) -->
+<div class="md:col-span-7 flex flex-col items-center justify-center space-y-12 bg-key-white border border-outline-variant rounded-xl p-12 shadow-sm relative overflow-hidden">
+<!-- Visual Pulse Background -->
+<div class="absolute inset-0 flex items-center justify-center pointer-events-none">
+<div class="w-64 h-64 rounded-full border border-secondary/20 pulse-ring"></div>
+</div>
+<div class="z-10 flex flex-col items-center space-y-4">
+<h2 class="font-label-mono text-label-mono text-on-surface-variant uppercase tracking-widest">Tempo</h2>
+<div class="flex items-center justify-center gap-8">
+<button class="w-16 h-16 rounded-full border border-outline-variant text-on-surface hover:border-secondary hover:text-secondary transition-colors flex items-center justify-center active:scale-95 bg-surface-container-lowest shadow-sm">
+<span class="material-symbols-outlined text-3xl">remove</span>
+</button>
+<div class="font-headline-xl text-[80px] leading-[80px] font-bold text-primary tabular-nums tracking-tighter">
+                            120
+                        </div>
+<button class="w-16 h-16 rounded-full border border-outline-variant text-on-surface hover:border-secondary hover:text-secondary transition-colors flex items-center justify-center active:scale-95 bg-surface-container-lowest shadow-sm">
+<span class="material-symbols-outlined text-3xl">add</span>
+</button>
+</div>
+<span class="font-body-sm text-body-sm text-on-surface-variant font-medium">BPM / Moderato</span>
+</div>
+<div class="z-10 w-full max-w-xs">
+<button class="w-full py-4 rounded-full border border-outline-variant text-primary font-label-mono text-label-mono hover:bg-surface-container-low transition-colors flex items-center justify-center gap-2 active:scale-95 shadow-sm bg-surface-container-lowest">
+<span class="material-symbols-outlined">touch_app</span>
+                        Tap Tempo
+                    </button>
+</div>
+</div>
+<!-- Practice Controls & Log (Right Column Desktop, Bottom Mobile) -->
+<div class="md:col-span-5 flex flex-col space-y-6">
+<!-- Controls Card -->
+<div class="bg-key-white border border-outline-variant rounded-xl p-card-padding shadow-sm space-y-6">
+<h3 class="font-label-mono text-label-mono text-on-surface-variant uppercase border-b border-outline-variant pb-2">Settings</h3>
+<!-- Time Signature -->
+<div class="space-y-3">
+<label class="font-body-sm text-body-sm text-on-surface font-medium">Time Signature</label>
+<div class="flex rounded-lg overflow-hidden border border-outline-variant">
+<button class="flex-1 py-2 font-notation-lg text-notation-lg bg-surface-container-low text-on-surface border-r border-outline-variant hover:bg-surface-container-high transition-colors">4/4</button>
+<button class="flex-1 py-2 font-notation-lg text-notation-lg bg-surface-container-lowest text-on-surface-variant border-r border-outline-variant hover:bg-surface-container-low transition-colors">3/4</button>
+<button class="flex-1 py-2 font-notation-lg text-notation-lg bg-surface-container-lowest text-on-surface-variant hover:bg-surface-container-low transition-colors">6/8</button>
+</div>
+</div>
+<!-- Toggles & Sliders -->
+<div class="space-y-4">
+<label class="flex items-center justify-between cursor-pointer">
+<span class="font-body-sm text-body-sm text-on-surface font-medium">Accent First Beat</span>
+<div class="relative">
+<input checked="" class="sr-only peer" type="checkbox"/>
+<div class="w-11 h-6 bg-surface-container-highest peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-key-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-secondary"></div>
+</div>
+</label>
+<div class="space-y-2 pt-2">
+<div class="flex justify-between items-center">
+<span class="font-body-sm text-body-sm text-on-surface font-medium flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]">volume_up</span> Click Volume
+                                </span>
+</div>
+<input class="w-full h-2 bg-surface-container-high rounded-lg appearance-none cursor-pointer accent-secondary" max="100" min="0" type="range" value="80"/>
+</div>
+</div>
+</div>
+<!-- Recent Log -->
+<div class="bg-key-white border border-outline-variant rounded-xl p-card-padding shadow-sm flex-1">
+<h3 class="font-label-mono text-label-mono text-on-surface-variant uppercase border-b border-outline-variant pb-2 mb-4">Recent Sessions</h3>
+<ul class="space-y-3">
+<li class="flex justify-between items-center text-sm">
+<span class="font-notation-lg text-notation-lg text-primary">120 <span class="text-xs text-on-surface-variant">BPM</span></span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">4/4 • Today</span>
+</li>
+<li class="flex justify-between items-center text-sm">
+<span class="font-notation-lg text-notation-lg text-primary">85 <span class="text-xs text-on-surface-variant">BPM</span></span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">3/4 • Yesterday</span>
+</li>
+<li class="flex justify-between items-center text-sm">
+<span class="font-notation-lg text-notation-lg text-primary">144 <span class="text-xs text-on-surface-variant">BPM</span></span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">4/4 • 2 days ago</span>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</main>
+<!-- BottomNavBar (Mobile & Persistent Playback) -->
+<nav class="fixed bottom-0 w-full z-50 flex justify-between items-center px-container-margin border-t bg-key-white dark:bg-key-black h-[72px] shadow-lg">
+<a class="flex flex-col items-center gap-1 text-on-surface-variant dark:text-surface-variant active:scale-90 transition-all duration-150 hover:text-secondary dark:hover:text-secondary-fixed" href="#">
+<span class="material-symbols-outlined" data-icon="play_arrow">play_arrow</span>
+<span class="font-label-mono text-label-mono text-[10px]">Play</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-on-surface-variant dark:text-surface-variant active:scale-90 transition-all duration-150 hover:text-secondary dark:hover:text-secondary-fixed" href="#">
+<span class="material-symbols-outlined" data-icon="speed">speed</span>
+<span class="font-label-mono text-label-mono text-[10px]">Tempo</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-secondary dark:text-secondary-fixed-dim scale-110 active:scale-90 transition-all duration-150" href="#">
+<span class="material-symbols-outlined" data-icon="timer" style="font-variation-settings: 'FILL' 1;">timer</span>
+<span class="font-label-mono text-label-mono text-[10px]">Metronome</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-on-surface-variant dark:text-surface-variant active:scale-90 transition-all duration-150 hover:text-secondary dark:hover:text-secondary-fixed" href="#">
+<span class="material-symbols-outlined" data-icon="volume_up">volume_up</span>
+<span class="font-label-mono text-label-mono text-[10px]">Volume</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-on-surface-variant dark:text-surface-variant active:scale-90 transition-all duration-150 hover:text-secondary dark:hover:text-secondary-fixed" href="#">
+<span class="material-symbols-outlined" data-icon="speaker">speaker</span>
+<span class="font-label-mono text-label-mono text-[10px]">Output</span>
+</a>
+</nav>
+</body></html>

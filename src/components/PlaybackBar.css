@@ -1,0 +1,41 @@
+/* PlaybackBar — design-brief §PlaybackBar. Tokens only. */
+
+.playback-bar {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.play-icon {
+  width: 24px;
+  height: 24px;
+  fill: currentColor;
+}
+
+.playback-state {
+  font: var(--text-label-mono);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--color-on-surface-variant);
+  min-width: 4em;
+}
+
+@media (max-width: 767px) {
+  .playback-bar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 72px;
+    padding: 12px 16px;
+    box-sizing: border-box;
+    background: var(--color-surface);
+    border-top: 1px solid var(--color-outline-variant);
+    z-index: 20;
+  }
+
+  .playback-bar .playback-state {
+    margin-left: auto;
+  }
+}

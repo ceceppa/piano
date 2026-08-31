@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Piano Harmony Explorer - Favorites</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@600;700&amp;family=Inter:wght@400&amp;family=JetBrains+Mono:wght@500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "key-white": "#FFFFFF",
+                        "success-green": "#22C55E",
+                        "inverse-surface": "#2e3132",
+                        "secondary-fixed": "#dde1ff",
+                        "surface-tint": "#5b5e68",
+                        "surface-variant": "#e1e3e4",
+                        "tertiary": "#735c00",
+                        "error-container": "#ffdad6",
+                        "highlight-teal": "#00B4D8",
+                        "outline-variant": "#c6c6cb",
+                        "on-error-container": "#93000a",
+                        "on-secondary-container": "#efefff",
+                        "background": "#f8f9fa",
+                        "tertiary-fixed-dim": "#e9c349",
+                        "secondary-fixed-dim": "#b8c3ff",
+                        "on-tertiary-fixed": "#241a00",
+                        "error": "#ba1a1a",
+                        "on-surface": "#191c1d",
+                        "tertiary-container": "#cba72f",
+                        "on-secondary-fixed": "#001356",
+                        "on-primary": "#ffffff",
+                        "surface-container-highest": "#e1e3e4",
+                        "on-tertiary-fixed-variant": "#574500",
+                        "primary-container": "#1a1e26",
+                        "surface": "#f8f9fa",
+                        "key-black": "#121417",
+                        "on-secondary": "#ffffff",
+                        "on-error": "#ffffff",
+                        "surface-bright": "#f8f9fa",
+                        "secondary": "#0040e0",
+                        "inverse-primary": "#c3c6d1",
+                        "on-primary-fixed-variant": "#434750",
+                        "outline": "#76777c",
+                        "surface-dim": "#d9dadb",
+                        "scale-tone-muted": "#E2E8F0",
+                        "surface-container-high": "#e7e8e9",
+                        "on-primary-fixed": "#181c24",
+                        "on-tertiary-container": "#4e3d00",
+                        "surface-container": "#edeeef",
+                        "on-tertiary": "#ffffff",
+                        "on-surface-variant": "#45474b",
+                        "on-background": "#191c1d",
+                        "on-primary-container": "#828690",
+                        "on-secondary-fixed-variant": "#0035be",
+                        "surface-container-lowest": "#ffffff",
+                        "primary": "#02040a",
+                        "inverse-on-surface": "#f0f1f2",
+                        "secondary-container": "#2e5bff",
+                        "surface-container-low": "#f3f4f5",
+                        "primary-fixed": "#dfe2ed",
+                        "tertiary-fixed": "#ffe088",
+                        "primary-fixed-dim": "#c3c6d1"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "keyboard-height-desktop": "240px",
+                        "container-margin": "24px",
+                        "keyboard-height-mobile": "180px",
+                        "base": "8px",
+                        "card-padding": "20px",
+                        "gutter": "16px"
+                    },
+                    "fontFamily": {
+                        "body-md": ["Inter"],
+                        "body-sm": ["Inter"],
+                        "headline-lg": ["Hanken Grotesk"],
+                        "notation-lg": ["JetBrains Mono"],
+                        "headline-lg-mobile": ["Hanken Grotesk"],
+                        "label-mono": ["JetBrains Mono"],
+                        "headline-xl": ["Hanken Grotesk"]
+                    },
+                    "fontSize": {
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "body-sm": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "headline-lg": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                        "notation-lg": ["20px", { "lineHeight": "28px", "fontWeight": "600" }],
+                        "headline-lg-mobile": ["24px", { "lineHeight": "32px", "fontWeight": "600" }],
+                        "label-mono": ["13px", { "lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "500" }],
+                        "headline-xl": ["40px", { "lineHeight": "48px", "letterSpacing": "-0.02em", "fontWeight": "700" }]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        .icon-fill { font-variation-settings: 'FILL' 1; }
+    </style>
+</head>
+<body class="bg-background dark:bg-key-black text-on-background dark:text-key-white font-body-md antialiased overflow-x-hidden min-h-screen flex flex-col md:flex-row">
+<!-- TopNavBar (Mobile Only) -->
+<header class="md:hidden flex justify-between items-center w-full px-container-margin py-4 max-w-[1280px] mx-auto bg-key-white dark:bg-key-black border-b border-outline-variant dark:border-outline fixed top-0 z-40">
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile font-bold text-primary dark:text-key-white">Piano Harmony Explorer</h1>
+<div class="flex items-center gap-4 text-primary dark:text-key-white">
+<span class="material-symbols-outlined cursor-pointer" data-icon="search">search</span>
+<span class="material-symbols-outlined cursor-pointer" data-icon="settings">settings</span>
+</div>
+</header>
+<!-- SideNavBar (Desktop Only) -->
+<nav class="hidden md:flex flex-col h-full py-6 bg-key-white dark:bg-key-black text-primary dark:text-key-white border-r border-outline-variant dark:border-outline w-64 fixed left-0 top-0 z-40">
+<div class="px-6 mb-8">
+<h1 class="font-headline-lg text-headline-lg font-bold text-primary dark:text-key-white mb-2">Studio Workspace</h1>
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-surface-container-high dark:bg-inverse-surface overflow-hidden flex items-center justify-center">
+<span class="material-symbols-outlined text-sm" data-icon="person">person</span>
+</div>
+<span class="font-label-mono text-label-mono text-on-surface-variant dark:text-surface-variant">Pro Account</span>
+</div>
+</div>
+<ul class="flex-1 flex flex-col gap-2">
+<li>
+<a class="flex items-center gap-4 px-6 py-3 text-on-surface-variant dark:text-surface-variant hover:bg-surface-container-low dark:hover:bg-inverse-surface transition-all cursor-pointer active:scale-95 duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="keyboard">keyboard</span>
+<span class="font-label-mono text-label-mono">Explore</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-4 px-6 py-3 text-secondary dark:text-secondary-fixed font-bold border-r-4 border-secondary dark:border-secondary-fixed cursor-pointer active:scale-95 duration-200 bg-surface-container-lowest dark:bg-key-black" href="#">
+<span class="material-symbols-outlined icon-fill" data-icon="favorite">favorite</span>
+<span class="font-label-mono text-label-mono">Favorites</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-4 px-6 py-3 text-on-surface-variant dark:text-surface-variant hover:bg-surface-container-low dark:hover:bg-inverse-surface transition-all cursor-pointer active:scale-95 duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="metronome">file_map_stack</span>
+<span class="font-label-mono text-label-mono">Metronome</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-4 px-6 py-3 text-on-surface-variant dark:text-surface-variant hover:bg-surface-container-low dark:hover:bg-inverse-surface transition-all cursor-pointer active:scale-95 duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span class="font-label-mono text-label-mono">Settings</span>
+</a>
+</li>
+</ul>
+</nav>
+<!-- Main Content -->
+<main class="flex-1 md:ml-64 mt-[72px] md:mt-0 mb-[72px] p-container-margin max-w-[1024px]">
+<header class="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
+<div>
+<h2 class="font-headline-xl text-headline-xl text-primary dark:text-key-white">Your Collection</h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant dark:text-surface-variant mt-2">Manage your saved chords and progressions.</p>
+</div>
+<div class="flex items-center gap-3">
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant dark:text-surface-variant pointer-events-none text-sm" data-icon="search">search</span>
+<input class="pl-10 pr-4 py-2 bg-surface-container-low dark:bg-inverse-surface border border-outline-variant dark:border-outline rounded-full font-label-mono text-label-mono text-primary dark:text-key-white focus:outline-none focus:border-secondary dark:focus:border-secondary-fixed transition-colors w-full md:w-64" placeholder="Search collection..." type="text"/>
+</div>
+</div>
+</header>
+<!-- Filters -->
+<div class="flex gap-2 mb-8 overflow-x-auto pb-2 scrollbar-hide">
+<button class="px-4 py-1.5 rounded-full bg-secondary dark:bg-secondary-fixed text-key-white dark:text-on-secondary-fixed font-label-mono text-label-mono whitespace-nowrap transition-colors">All</button>
+<button class="px-4 py-1.5 rounded-full bg-surface-container-low dark:bg-inverse-surface border border-outline-variant dark:border-outline text-on-surface-variant dark:text-surface-variant font-label-mono text-label-mono whitespace-nowrap hover:bg-surface-container-high dark:hover:bg-surface-tint transition-colors">Chords (12)</button>
+<button class="px-4 py-1.5 rounded-full bg-surface-container-low dark:bg-inverse-surface border border-outline-variant dark:border-outline text-on-surface-variant dark:text-surface-variant font-label-mono text-label-mono whitespace-nowrap hover:bg-surface-container-high dark:hover:bg-surface-tint transition-colors">Progressions (5)</button>
+<button class="px-4 py-1.5 rounded-full bg-surface-container-low dark:bg-inverse-surface border border-outline-variant dark:border-outline text-on-surface-variant dark:text-surface-variant font-label-mono text-label-mono whitespace-nowrap hover:bg-surface-container-high dark:hover:bg-surface-tint transition-colors">Scales (3)</button>
+</div>
+<!-- Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+<!-- Chord Card 1 -->
+<div class="bg-key-white dark:bg-key-black border border-outline-variant dark:border-outline rounded-xl p-card-padding flex flex-col group hover:border-secondary dark:hover:border-secondary-fixed transition-colors">
+<div class="flex justify-between items-start mb-4">
+<div>
+<h3 class="font-notation-lg text-notation-lg text-primary dark:text-key-white">Cmaj9</h3>
+<p class="font-label-mono text-label-mono text-on-surface-variant dark:text-surface-variant mt-1">Root Position</p>
+</div>
+<button class="text-secondary dark:text-secondary-fixed hover:scale-110 transition-transform">
+<span class="material-symbols-outlined icon-fill" data-icon="favorite">favorite</span>
+</button>
+</div>
+<!-- Mini Keyboard Preview Placeholder -->
+<div class="h-20 bg-surface-container-low dark:bg-inverse-surface rounded-lg mb-4 flex items-center justify-center opacity-70">
+<span class="font-label-mono text-label-mono text-on-surface-variant dark:text-surface-variant text-xs">Mini Keyboard</span>
+</div>
+<div class="mt-auto flex justify-between items-center">
+<div class="flex gap-1">
+<span class="w-2 h-2 rounded-full bg-secondary"></span>
+<span class="w-2 h-2 rounded-full bg-secondary opacity-50"></span>
+<span class="w-2 h-2 rounded-full bg-secondary opacity-50"></span>
+</div>
+<button class="font-label-mono text-label-mono text-secondary dark:text-secondary-fixed uppercase hover:underline">View</button>
+</div>
+</div>
+<!-- Progression Card 1 -->
+<div class="bg-key-white dark:bg-key-black border border-outline-variant dark:border-outline rounded-xl p-card-padding flex flex-col group hover:border-secondary dark:hover:border-secondary-fixed transition-colors">
+<div class="flex justify-between items-start mb-4">
+<div>
+<h3 class="font-notation-lg text-notation-lg text-primary dark:text-key-white">ii - V - I</h3>
+<p class="font-label-mono text-label-mono text-on-surface-variant dark:text-surface-variant mt-1">Jazz Standard</p>
+</div>
+<button class="text-secondary dark:text-secondary-fixed hover:scale-110 transition-transform">
+<span class="material-symbols-outlined icon-fill" data-icon="favorite">favorite</span>
+</button>
+</div>
+<div class="flex items-center gap-2 mb-6 font-notation-lg text-notation-lg text-on-surface-variant dark:text-surface-variant text-sm">
+<span>Dm7</span>
+<span class="material-symbols-outlined text-xs" data-icon="arrow_right_alt">arrow_right_alt</span>
+<span>G7</span>
+<span class="material-symbols-outlined text-xs" data-icon="arrow_right_alt">arrow_right_alt</span>
+<span class="text-primary dark:text-key-white">Cmaj7</span>
+</div>
+<div class="mt-auto flex justify-between items-center">
+<span class="px-2 py-1 rounded-full bg-surface-container-low dark:bg-inverse-surface font-body-sm text-body-sm text-xs text-on-surface-variant dark:text-surface-variant">Key of C</span>
+<button class="w-10 h-10 rounded-full bg-primary text-key-white dark:bg-key-white dark:text-primary flex items-center justify-center hover:scale-105 transition-transform">
+<span class="material-symbols-outlined" data-icon="play_arrow">play_arrow</span>
+</button>
+</div>
+</div>
+<!-- Chord Card 2 -->
+<div class="bg-key-white dark:bg-key-black border border-outline-variant dark:border-outline rounded-xl p-card-padding flex flex-col group hover:border-secondary dark:hover:border-secondary-fixed transition-colors">
+<div class="flex justify-between items-start mb-4">
+<div>
+<h3 class="font-notation-lg text-notation-lg text-primary dark:text-key-white">F#m11</h3>
+<p class="font-label-mono text-label-mono text-on-surface-variant dark:text-surface-variant mt-1">1st Inversion</p>
+</div>
+<button class="text-secondary dark:text-secondary-fixed hover:scale-110 transition-transform">
+<span class="material-symbols-outlined icon-fill" data-icon="favorite">favorite</span>
+</button>
+</div>
+<!-- Mini Keyboard Preview Placeholder -->
+<div class="h-20 bg-surface-container-low dark:bg-inverse-surface rounded-lg mb-4 flex items-center justify-center opacity-70">
+<span class="font-label-mono text-label-mono text-on-surface-variant dark:text-surface-variant text-xs">Mini Keyboard</span>
+</div>
+<div class="mt-auto flex justify-between items-center">
+<div class="flex gap-1">
+<span class="w-2 h-2 rounded-full bg-secondary opacity-50"></span>
+<span class="w-2 h-2 rounded-full bg-secondary"></span>
+<span class="w-2 h-2 rounded-full bg-secondary opacity-50"></span>
+</div>
+<button class="font-label-mono text-label-mono text-secondary dark:text-secondary-fixed uppercase hover:underline">View</button>
+</div>
+</div>
+</div>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 w-full z-50 flex justify-between items-center px-container-margin border-t bg-key-white dark:bg-key-black border-outline-variant dark:border-outline shadow-lg h-[72px]">
+<button class="flex flex-col items-center gap-1 text-on-surface-variant dark:text-surface-variant hover:text-secondary dark:hover:text-secondary-fixed transition-transform active:scale-90 duration-150">
+<span class="material-symbols-outlined" data-icon="play_arrow">play_arrow</span>
+<span class="font-label-mono text-label-mono text-[10px]">Play</span>
+</button>
+<button class="flex flex-col items-center gap-1 text-on-surface-variant dark:text-surface-variant hover:text-secondary dark:hover:text-secondary-fixed transition-transform active:scale-90 duration-150">
+<span class="material-symbols-outlined" data-icon="speed">speed</span>
+<span class="font-label-mono text-label-mono text-[10px]">Tempo</span>
+</button>
+<button class="flex flex-col items-center gap-1 text-on-surface-variant dark:text-surface-variant hover:text-secondary dark:hover:text-secondary-fixed transition-transform active:scale-90 duration-150">
+<span class="material-symbols-outlined" data-icon="timer">timer</span>
+<span class="font-label-mono text-label-mono text-[10px]">Metronome</span>
+</button>
+<button class="flex flex-col items-center gap-1 text-on-surface-variant dark:text-surface-variant hover:text-secondary dark:hover:text-secondary-fixed transition-transform active:scale-90 duration-150">
+<span class="material-symbols-outlined" data-icon="volume_up">volume_up</span>
+<span class="font-label-mono text-label-mono text-[10px]">Volume</span>
+</button>
+<button class="flex flex-col items-center gap-1 text-on-surface-variant dark:text-surface-variant hover:text-secondary dark:hover:text-secondary-fixed transition-transform active:scale-90 duration-150">
+<span class="material-symbols-outlined" data-icon="speaker">speaker</span>
+<span class="font-label-mono text-label-mono text-[10px]">Output</span>
+</button>
+</nav>
+</body></html>
