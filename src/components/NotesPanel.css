@@ -1,0 +1,17 @@
+/* Notes panel — design-brief §Notes panel (phase-3). */
+
+.notes-row {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.notes-label {
+  font: var(--text-label-mono);
+  color: var(--color-on-surface-variant);
+}
+
+.notes-value {
+  font: var(--text-notation-lg);
+  color: var(--color-on-surface);
+}

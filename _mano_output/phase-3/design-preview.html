@@ -1,0 +1,364 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Piano Chord Explorer — Phase 3 preview</title>
+<style>
+  :root[data-theme='light'] {
+    --color-background: #F8F9FA;
+    --color-surface: #FFFFFF;
+    --color-surface-low: #F3F4F5;
+    --color-surface-high: #E7E8E9;
+    --color-on-surface: #191C1D;
+    --color-on-surface-variant: #45474B;
+    --color-primary: #02040A;
+    --color-on-primary: #FFFFFF;
+    --color-secondary: #0040E0;
+    --color-on-secondary: #FFFFFF;
+    --color-tertiary: #735C00;
+    --color-on-tertiary: #FFFFFF;
+    --color-outline: #76777C;
+    --color-outline-variant: #C6C6CB;
+    --color-key-white: #FFFFFF;
+    --color-key-black: #121417;
+    --color-scale-tone-muted: #E2E8F0;
+  }
+  :root[data-theme='dark'] {
+    --color-background: #202224;
+    --color-surface: #26282A;
+    --color-surface-low: #2B2D2F;
+    --color-surface-high: #36383A;
+    --color-on-surface: #E1E3E4;
+    --color-on-surface-variant: #C6C8C9;
+    --color-primary: #C3C6D1;
+    --color-on-primary: #1A1E26;
+    --color-secondary: #B8C3FF;
+    --color-on-secondary: #0035BE;
+    --color-tertiary: #E9C349;
+    --color-on-tertiary: #4E3D00;
+    --color-outline: #8F9293;
+    --color-outline-variant: #45474B;
+    --color-key-white: #F1F2F2;
+    --color-key-black: #0D0E0F;
+    --color-scale-tone-muted: #3C3E41;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--color-background);
+    color: var(--color-on-surface);
+    font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+  }
+  .font-display { font-family: 'Hanken Grotesk', ui-sans-serif, system-ui, sans-serif; }
+  .font-mono { font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace; }
+
+  .page { max-width: 1280px; margin: 0 auto; padding: 24px 24px 96px; }
+
+  header { display: flex; align-items: center; justify-content: space-between; padding: 8px 0 24px; }
+  .app-title { font-size: 20px; font-weight: 600; letter-spacing: -0.01em; }
+
+  .theme-switch {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: var(--color-surface-high); border-radius: 9999px; padding: 4px;
+    font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 13px;
+  }
+  .theme-switch button {
+    border: none; background: transparent; padding: 6px 12px; border-radius: 9999px;
+    color: var(--color-on-surface-variant); cursor: pointer; font: inherit;
+  }
+  .theme-switch button[aria-pressed="true"] {
+    background: var(--color-secondary); color: var(--color-on-secondary);
+  }
+
+  .chord-title {
+    font-size: 40px; line-height: 48px; font-weight: 700; letter-spacing: -0.02em;
+    margin: 0 0 24px;
+  }
+
+  .dominant-pair { display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-end; margin-bottom: 16px; }
+  .field label {
+    display: block; font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 13px; letter-spacing: 0.05em; color: var(--color-on-surface-variant); margin-bottom: 8px;
+  }
+
+  .segmented { display: inline-flex; border-radius: 0.25rem; overflow: hidden; border: 1px solid var(--color-outline-variant); }
+  .segmented button {
+    border: none; background: var(--color-surface); color: var(--color-on-surface);
+    font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 20px; padding: 8px 14px;
+    cursor: pointer; border-right: 1px solid var(--color-outline-variant);
+  }
+  .segmented button:last-child { border-right: none; }
+  .segmented button[aria-pressed="true"] { background: var(--color-primary); color: var(--color-on-primary); }
+  .segmented.compact button { font-size: 14px; padding: 6px 12px; }
+
+  select.select {
+    background: var(--color-surface); border: 1px solid var(--color-outline-variant);
+    border-radius: 0.25rem; padding: 10px 12px; font-size: 16px; color: var(--color-on-surface);
+    font-family: Inter, sans-serif;
+  }
+  select.select:focus-visible { outline: 2px solid var(--color-secondary); outline-offset: 1px; }
+
+  /* Keyboard */
+  .keyboard-band {
+    background: var(--color-surface); border-top: 1px solid var(--color-outline-variant);
+    border-bottom: 1px solid var(--color-outline-variant); padding: 24px 0; overflow-x: auto; margin-bottom: 16px;
+  }
+  .keys { position: relative; height: 240px; display: flex; width: max-content; margin: 0 auto; padding: 0 24px; }
+  .white-key {
+    position: relative; width: 48px; height: 240px; background: var(--color-key-white);
+    border: 1px solid var(--color-outline-variant); border-radius: 0 0 0.375rem 0.375rem;
+    display: flex; align-items: flex-end; justify-content: center; padding-bottom: 12px; gap: 4px;
+  }
+  .black-key {
+    position: absolute; top: 0; width: 32px; height: 132px; margin-left: -16px;
+    background: var(--color-key-black); border-radius: 0 0 0.25rem 0.25rem; z-index: 2;
+    display: flex; align-items: flex-end; justify-content: center; padding-bottom: 10px;
+  }
+  .marker { display: block; }
+  .marker-root {
+    width: 18px; height: 18px; background: var(--color-tertiary); border: 2px solid #4E3D00;
+    transform: rotate(45deg); border-radius: 2px;
+  }
+  .marker-chordtone { width: 12px; height: 12px; border-radius: 50%; background: var(--color-secondary); }
+  .marker-scaletone {
+    width: 16px; height: 16px; border-radius: 50%; border: 2px solid var(--color-secondary); background: transparent;
+  }
+  .white-key.scale-in-key { background: var(--color-scale-tone-muted); }
+
+  /* Notes panel */
+  .card {
+    background: var(--color-surface); border: 1px solid var(--color-outline-variant);
+    border-radius: 0.75rem; padding: 20px; margin-bottom: 16px;
+  }
+  .card-label {
+    font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 13px; letter-spacing: 0.05em;
+    text-transform: uppercase; color: var(--color-on-surface-variant); margin: 0 0 12px;
+  }
+  .notes-row { display: flex; gap: 12px; align-items: baseline; margin-bottom: 6px; }
+  .notes-row:last-child { margin-bottom: 0; }
+  .notes-row .row-label {
+    font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 13px; color: var(--color-on-surface-variant);
+    width: 64px; flex: none;
+  }
+  .notes-row .row-value { font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 20px; font-weight: 600; }
+
+  /* Secondary/context row */
+  .context-row {
+    display: flex; flex-wrap: wrap; gap: 20px; align-items: center;
+    background: var(--color-surface-low); border-radius: 0.5rem; padding: 12px 16px; margin-bottom: 16px;
+  }
+  .context-field { display: flex; flex-direction: column; gap: 6px; }
+  .context-field label {
+    font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 11px; letter-spacing: 0.05em;
+    color: var(--color-on-surface-variant);
+  }
+  .toggle {
+    display: inline-flex; align-items: center; gap: 8px; background: transparent; border: none;
+    font-family: Inter, sans-serif; font-size: 13px; color: var(--color-on-surface-variant); cursor: pointer;
+  }
+  .toggle .track { width: 32px; height: 18px; border-radius: 9999px; background: var(--color-surface-high); position: relative; }
+  .toggle .knob { position: absolute; top: 2px; left: 2px; width: 14px; height: 14px; border-radius: 50%; background: var(--color-surface); }
+
+  /* PlaybackBar */
+  .playback-bar {
+    display: flex; align-items: center; gap: 12px; padding: 12px 0; margin-bottom: 32px;
+  }
+  .btn {
+    border-radius: 0.25rem; height: 40px; padding: 0 16px; font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 13px; border: 1px solid transparent; cursor: pointer;
+  }
+  .btn-primary { background: var(--color-primary); color: var(--color-on-primary); }
+  .btn-ghost { background: transparent; border-color: var(--color-outline-variant); color: var(--color-on-surface); }
+  .status-label {
+    font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 13px; letter-spacing: 0.05em;
+    text-transform: uppercase; color: var(--color-on-surface-variant); margin-left: auto;
+  }
+
+  /* Tile grid */
+  .section-title { font-family: 'Hanken Grotesk', sans-serif; font-size: 32px; font-weight: 600; margin: 0 0 16px; }
+  .group-label {
+    font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 13px; letter-spacing: 0.05em;
+    text-transform: uppercase; color: var(--color-on-surface-variant); margin: 20px 0 10px;
+  }
+  .tile-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 12px; }
+  .tile {
+    background: var(--color-surface-low); border: 1px solid var(--color-outline-variant); border-radius: 0.25rem;
+    min-height: 88px; padding: 12px; display: flex; flex-direction: column; justify-content: center; gap: 4px;
+    cursor: pointer; text-align: left; font-family: inherit;
+  }
+  .tile .symbol { font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 20px; font-weight: 600; color: var(--color-on-surface); }
+  .tile .label { font-family: Inter, sans-serif; font-size: 14px; color: var(--color-on-surface-variant); }
+  .tile.selected {
+    background: var(--color-secondary); outline: 2px solid var(--color-secondary); outline-offset: 2px;
+  }
+  .tile.selected .symbol, .tile.selected .label { color: var(--color-on-secondary); }
+
+  .legend { display: flex; gap: 20px; flex-wrap: wrap; margin-bottom: 16px; font-size: 13px; color: var(--color-on-surface-variant); }
+  .legend span { display: inline-flex; align-items: center; gap: 6px; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <header>
+    <div class="app-title font-display">Piano Chord Explorer</div>
+    <div class="theme-switch" role="group" aria-label="Theme">
+      <button type="button" aria-pressed="true" onclick="setTheme('light')">Light</button>
+      <button type="button" aria-pressed="false" onclick="setTheme('dark')">Dark</button>
+    </div>
+  </header>
+
+  <h1 class="chord-title font-display">C major</h1>
+
+  <div class="dominant-pair">
+    <div class="field">
+      <label>Root note</label>
+      <div class="segmented" role="radiogroup" aria-label="Root note">
+        <button type="button" aria-pressed="true">C</button>
+        <button type="button" aria-pressed="false">D</button>
+        <button type="button" aria-pressed="false">E</button>
+        <button type="button" aria-pressed="false">F</button>
+        <button type="button" aria-pressed="false">G</button>
+        <button type="button" aria-pressed="false">A</button>
+        <button type="button" aria-pressed="false">B</button>
+      </div>
+    </div>
+    <div class="field">
+      <label>Chord quality</label>
+      <select class="select" aria-label="Chord quality">
+        <option selected>Major</option>
+        <option>Minor</option>
+        <option>Diminished</option>
+        <option>Augmented</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="legend">
+    <span><span class="marker marker-root" style="display:inline-block;width:12px;height:12px;"></span> Root</span>
+    <span><span class="marker marker-chordtone" style="display:inline-block;"></span> Chord tone</span>
+    <span><span class="marker marker-scaletone" style="display:inline-block;width:12px;height:12px;"></span> Scale tone (phase-3 redesign)</span>
+  </div>
+
+  <div class="keyboard-band">
+    <div class="keys">
+      <!-- C -->
+      <div class="white-key"><span class="marker marker-root"></span></div>
+      <div class="black-key"><span class="marker marker-scaletone"></span></div>
+      <!-- D -->
+      <div class="white-key scale-in-key"><span class="marker marker-scaletone"></span></div>
+      <div class="black-key"></div>
+      <!-- E -->
+      <div class="white-key"><span class="marker marker-chordtone"></span></div>
+      <!-- F -->
+      <div class="white-key scale-in-key"><span class="marker marker-scaletone"></span></div>
+      <div class="black-key"><span class="marker marker-scaletone"></span></div>
+      <!-- G -->
+      <div class="white-key"><span class="marker marker-chordtone"></span></div>
+      <div class="black-key"></div>
+      <!-- A -->
+      <div class="white-key scale-in-key"><span class="marker marker-scaletone"></span></div>
+      <div class="black-key"><span class="marker marker-scaletone"></span></div>
+      <!-- B -->
+      <div class="white-key scale-in-key"><span class="marker marker-scaletone"></span></div>
+      <!-- C (next octave) -->
+      <div class="white-key"><span class="marker marker-root"></span></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <p class="card-label">Notes</p>
+    <div class="notes-row">
+      <span class="row-label">Chord</span>
+      <span class="row-value">C · E · G</span>
+    </div>
+    <div class="notes-row">
+      <span class="row-label">Scale</span>
+      <span class="row-value">C · D · E · F · G · A · B</span>
+    </div>
+  </div>
+
+  <div class="context-row">
+    <div class="context-field">
+      <label>View mode</label>
+      <div class="segmented compact" role="radiogroup" aria-label="View mode">
+        <button type="button" aria-pressed="false">Chord</button>
+        <button type="button" aria-pressed="false">Scale</button>
+        <button type="button" aria-pressed="true">Both</button>
+      </div>
+    </div>
+    <div class="context-field">
+      <label>Scale follows</label>
+      <div class="segmented compact" role="radiogroup" aria-label="Scale follows">
+        <button type="button" aria-pressed="true">Chord root</button>
+        <button type="button" aria-pressed="false">Selected key</button>
+      </div>
+    </div>
+    <div class="context-field">
+      <label>Octave range</label>
+      <select class="select" aria-label="Octave range">
+        <option selected>C3–B4</option>
+        <option>C2–B4</option>
+      </select>
+    </div>
+    <div class="context-field">
+      <label>Genre</label>
+      <select class="select" aria-label="Genre">
+        <option selected>Any</option>
+        <option>Pop</option>
+        <option>Jazz</option>
+      </select>
+    </div>
+    <div class="context-field">
+      <label>Note names</label>
+      <button type="button" class="toggle" role="switch" aria-checked="true">
+        <span class="track"><span class="knob"></span></span> On
+      </button>
+    </div>
+  </div>
+
+  <div class="playback-bar">
+    <button type="button" class="btn btn-primary">Play chord</button>
+    <button type="button" class="btn btn-ghost">Arpeggiate</button>
+    <button type="button" class="btn btn-ghost">Play scale</button>
+    <span class="status-label">Ready</span>
+  </div>
+
+  <h2 class="section-title font-display">Explore C chord types</h2>
+
+  <p class="group-label">Core</p>
+  <div class="tile-grid">
+    <button type="button" class="tile selected"><span class="symbol">C</span><span class="label">Major</span></button>
+    <button type="button" class="tile"><span class="symbol">Cm</span><span class="label">Minor</span></button>
+    <button type="button" class="tile"><span class="symbol">Cdim</span><span class="label">Diminished</span></button>
+    <button type="button" class="tile"><span class="symbol">Caug</span><span class="label">Augmented</span></button>
+  </div>
+
+  <p class="group-label">Colour</p>
+  <div class="tile-grid">
+    <button type="button" class="tile"><span class="symbol">Csus2</span><span class="label">Suspended 2nd</span></button>
+    <button type="button" class="tile"><span class="symbol">Csus4</span><span class="label">Suspended 4th</span></button>
+    <button type="button" class="tile"><span class="symbol">C6</span><span class="label">Sixth</span></button>
+    <button type="button" class="tile"><span class="symbol">Cadd9</span><span class="label">Added ninth</span></button>
+  </div>
+
+  <p class="group-label">Sevenths &amp; extensions</p>
+  <div class="tile-grid">
+    <button type="button" class="tile"><span class="symbol">C7</span><span class="label">Dominant seventh</span></button>
+    <button type="button" class="tile"><span class="symbol">Cmaj7</span><span class="label">Major seventh</span></button>
+    <button type="button" class="tile"><span class="symbol">Cm7</span><span class="label">Minor seventh</span></button>
+    <button type="button" class="tile"><span class="symbol">C9</span><span class="label">Dominant ninth</span></button>
+  </div>
+
+</div>
+<script>
+  function setTheme(mode) {
+    document.documentElement.setAttribute('data-theme', mode);
+    document.querySelectorAll('.theme-switch button').forEach(function (b) {
+      b.setAttribute('aria-pressed', b.textContent.trim().toLowerCase() === mode ? 'true' : 'false');
+    });
+  }
+</script>
+</body>
+</html>
