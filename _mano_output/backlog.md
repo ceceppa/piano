@@ -501,7 +501,7 @@
 - **Source:** phase-2 review
 - **Context:**
   The single-page chord-first layout works, but the overall UI still feels a bit confusing. Flagged for a later rethink rather than this phase.
-- **Status:** in-phase-5
+- **Status:** resolved
 
 ### Show chord and scale notes beneath the keyboard
 - **Type:** feature
@@ -582,4 +582,18 @@
 - **Source:** phase-5
 - **Context:**
   "when I play a chord or a scale they key(s) played on the keyboard needs to be highlighted" — playback (chord/scale/arpeggio) currently only makes sound; it doesn't light up the key(s) actually sounding at each moment, distinct from the existing static selection markers.
+- **Status:** backlog
+
+### Explore scales list missing scales already in scales.ts
+- **Type:** bug
+- **Source:** phase-5 review
+- **Context:**
+  The Explore scale picker should offer every scale the app already supports, but the human reports scales.ts defines scales that don't appear in the picker.
+- **Status:** backlog
+
+### Hear button should toggle to Stop instead of separate Playing/STOP state
+- **Type:** refinement
+- **Source:** phase-5 review
+- **Context:**
+  Pressing Hear should change the Play button itself into a Stop button, reverting to Play when the sound ends, replacing the separate "Playing..." label and extra STOP button.
 - **Status:** backlog

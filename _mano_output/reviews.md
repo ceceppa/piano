@@ -175,3 +175,58 @@
 
 - [ux-gap] Explore controls still confusing after inversion/voicing additions — Q2 answer: controls still read as confusing, deepening the Phase 2 feedback; new UX reference authored at ui/newui.md.
 - [ui-gap] New Explore UI/UX visual reference for redesign — new visual design reference (ui/newone.jpeg) provided to guide a redesign of the confusing Explore controls.
+
+---
+
+## Phase 5 Review — Sep 2 2026
+
+### Validation
+
+- **Result:** All Exit Criteria confirmed, including E6a by human sign-off. Explore now reads as clear ("oh yeah"). Removing genre and note-name display did take away something the human was using, though it's acceptable deferred to a future Settings screen. The scale list reads as a real catalogue, but should show every scale already defined in `scales.ts`.
+
+### Phase checks
+
+| # | Phase promise | Result | What happened |
+|---|---|---|---|
+| E1a | First load: Chord view active, default chord shown, nothing empty | signed off | |
+| E2a | All twelve roots are buttons, no chord-quality dropdown | signed off | |
+| E2b | Choosing a chord type updates title, inversion options, keyboard, Understand section and playback | signed off | |
+| E2c | Switching to Scale view and choosing a scale updates keyboard and Understand section, hides chord list | signed off | |
+| E2c+1 | Expanding the scale degrees row shows the W/H step pattern | signed off | |
+| E2d | Switching back to Chord view keeps the earlier chord and inversion selected | signed off | |
+| E3a | Both view marks chord and scale on keyboard; shared note distinguishable by shape, not colour alone | signed off | |
+| E3b | Both view shows both lists below the piano, chord types first, every option visible | signed off | |
+| E3c | Both view's Understand section lists chord notes, scale notes and shared notes | signed off | |
+| E4a | Scale view's Understand section has no chord notes, on screen or to a screen reader | signed off | |
+| E4b | Scale view hides the inversion selector | signed off | |
+| E5a | Primary playback action in each view matches the displayed root/chord/scale, inversion and voicing | signed off | |
+| E5b | Chord options show voicing and hand arrangement, update keyboard/playback, return focus on close | signed off | |
+| E5c | Tapping a single key sounds that note alone, selection unchanged | signed off | |
+| E6a | Root selector shows buttons at phone width, every piano key reachable and tappable | passed | Confirmed at real phone width, per Row Contract's proven code half plus human layout check. |
+| E6b | View, root and inversion selectors each move within their own group via arrow keys, focus visible | signed off | |
+
+### Questions
+
+| # | Question | Answer |
+|---|---|---|
+| Q1 | Is Explore actually clear now, or does the "a bit confusing" feedback from the Phase 2 and Phase 4 reviews still stand? | Yes — "oh yeah." |
+| Q2 | Does removing key, mode, genre and the keyboard-range control from Explore take away anything you were really using? | Yes — genre and note-name display are needed, but can wait for a later Settings screen. |
+| Q3 | With only the two scales the app already supports, does the Explore scales list read as a real catalogue or as a placeholder? | Real catalogue, but the picker needs to show every scale already defined in `scales.ts`. |
+
+### Decision
+
+- **Choice:** Nothing to decide.
+
+### Assumptions
+
+| # | Assumption | Result | What showed this |
+|---|-----------|---------|------------------------|
+| A1 | The scale picker is a deliberately narrowed version of the deferred "Additional scales, modes, chord qualities and genres" item | confirmed | User confirmed at review. |
+| A2 | Removing the keyboard-range control does not make the piano unusable on a small screen | confirmed | User confirmed at review. |
+| A3 | Showing every chord type and every scale at once stays readable in Both view | confirmed | User confirmed at review. |
+| A4 | Key and mode selection can be absent from the whole product until a later screen owns it | confirmed | User confirmed at review. |
+
+### Backlog changes
+
+- [bug] Explore scales list missing scales already in scales.ts — Q3 answer: picker should show every scale scales.ts already defines.
+- [refinement] Hear button should toggle to Stop instead of separate Playing/STOP state — Play button itself should become Stop while sounding, reverting to Play when the sound ends.

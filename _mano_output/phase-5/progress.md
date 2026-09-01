@@ -44,7 +44,7 @@
 | E5a | Playback and arrangement — Press the primary playback action in each of the three views: what sounds matches the displayed root, chord or scale, inversion and voicing | met |
 | E5b | Playback and arrangement — Open Chord options in Chord view: voicing and hand arrangement are both there, changing either updates the keyboard and playback, and closing returns focus to the control that opened it | met |
 | E5c | Playback and arrangement — Tap a single piano key: that note alone sounds and the current selection does not change | met |
-| E6a | Small screens and keyboard use — Narrow the window to a phone width: the root selector still shows buttons rather than a dropdown, and every piano key is still reachable and tappable | needs-human |
+| E6a | Small screens and keyboard use — Narrow the window to a phone width: the root selector still shows buttons rather than a dropdown, and every piano key is still reachable and tappable | met |
 | E6b | Small screens and keyboard use — Move through the view, root and inversion selectors using only the arrow keys: each moves within its own group and the focused option is clearly visible | met |
 
 ## Row Contracts
@@ -63,3 +63,4 @@ Expand the scale degrees detail row in Scale or Both view: it also shows the sca
 
 ### E6a
 reason: Needs a person at a real phone width. The code half is proven: Explore renders no dropdown at any width (there is no select in the app at all, and no width-conditional branch that could add one), the root selector always renders its twelve buttons, and every key of the window renders as its own button. What is left is a layout judgement no test here can make — narrow the window to roughly 375px and check that the root buttons wrap into a readable grid rather than overflowing, that the inversion row scrolls sideways, and that every piano key can actually be reached and tapped by scrolling the keyboard band. The keyboard now scrolls as one track with the black keys pinned to it, and white keys hold a 44px minimum width, so this is a check of that fix rather than of unwritten code.
+provenance: human sign-off at review, 2026-09-02
