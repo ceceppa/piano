@@ -122,16 +122,20 @@ describe('App theme wiring', () => {
     expect(secondary?.closest('.card')).toBeNull()
   })
 
-  it('places the keyboard directly after the controls, and playback directly beneath the keyboard', () => {
+  it('places the keyboard directly beneath the dominant pair, then notes, secondary controls, and playback (E4a, phase-3 layout)', () => {
     renderApp()
     const main = container.querySelector('.explore')!
     const children = [...main.children]
-    const secondaryIdx = children.findIndex((el) => el.classList.contains('controls-secondary'))
+    const dominantIdx = children.findIndex((el) => el.classList.contains('controls-dominant'))
     const keyboardIdx = children.findIndex((el) => el.classList.contains('keyboard-wrap'))
+    const notesIdx = children.findIndex((el) => el.classList.contains('notes-panel'))
+    const secondaryIdx = children.findIndex((el) => el.classList.contains('controls-secondary'))
     const playbackIdx = children.findIndex((el) => el.classList.contains('playback-bar'))
-    expect(secondaryIdx).toBeGreaterThanOrEqual(0)
-    expect(keyboardIdx).toBe(secondaryIdx + 1)
-    expect(playbackIdx).toBe(keyboardIdx + 1)
+    expect(dominantIdx).toBeGreaterThanOrEqual(0)
+    expect(keyboardIdx).toBe(dominantIdx + 1)
+    expect(notesIdx).toBe(keyboardIdx + 1)
+    expect(secondaryIdx).toBe(notesIdx + 1)
+    expect(playbackIdx).toBe(secondaryIdx + 1)
   })
 
   it('changing the root note updates the title, keyboard, scale, and related-chord section immediately', () => {
@@ -157,8 +161,10 @@ describe('App theme wiring', () => {
       (b) => b.getAttribute('aria-pressed') === 'true',
     )
     expect(selectedTile?.querySelector('.chord-tile-symbol')?.textContent).toBe('Cdim')
-    const gKey = container.querySelector<HTMLElement>('[data-midi="55"]')! // G, chord tone of C major, not of Cdim
-    expect(gKey.dataset.state).toBe('scale-note')
+    // Cdim's correct chord-root scale is C locrian (tech-spec §Chord-scale mapping), not C major —
+    // F3 is a locrian scale tone and not a Cdim chord tone.
+    const fKey = container.querySelector<HTMLElement>('[data-midi="53"]')!
+    expect(fKey.dataset.state).toBe('scale-note')
   })
 
   it('tapping a chord-type tile updates the store quality and the keyboard highlights end-to-end', () => {

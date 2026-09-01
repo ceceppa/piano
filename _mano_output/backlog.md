@@ -481,14 +481,14 @@
 - **Source:** phase-2 review
 - **Context:**
   C augmented shows C, D, E, F, G, G#, A, B on the keyboard instead of the correct C, D♯, E, G, G♯, B. This is the one confirmed instance, spotted during phase-2 review; other chord/scale pairings should be audited for the same kind of error, not just this one.
-- **Status:** backlog
+- **Status:** in-phase-3
 
 ### Make scale notes easier to see on the keyboard
 - **Type:** refinement
 - **Source:** phase-2 review
 - **Context:**
   Scale-tone markers on the keyboard are hard to distinguish at a glance, separate from the (confirmed working) root-note cue.
-- **Status:** backlog
+- **Status:** in-phase-3
 
 ### Revisit overall Explore screen UI clarity
 - **Type:** refinement
@@ -502,11 +502,11 @@
 - **Source:** phase-2 review
 - **Context:**
   Add a panel underneath the keyboard listing the chord's notes and, when view mode allows, its scale's notes -- easier to reference than reading the keyboard markers alone.
-- **Status:** backlog
+- **Status:** in-phase-3
 
 ### Place keyboard directly under the root-note selector
 - **Type:** refinement
 - **Source:** phase-2 review
 - **Context:**
   Consider positioning the keyboard directly beneath the root-note selector rather than after the full root+quality control block, to make the chord root even clearer. Raised while confirming the chord-first layout decision during phase-2 review.
-- **Status:** backlog
+- **Status:** in-phase-3

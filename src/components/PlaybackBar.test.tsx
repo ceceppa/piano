@@ -93,6 +93,17 @@ describe('PlaybackBar', () => {
     expect(audioEngine.playScale).toHaveBeenCalledWith([48, 50, 52, 53, 55, 57, 59])
   })
 
+  it('plays the chord-root scale, not always major, for a non-major-family quality (S1a fix)', async () => {
+    act(() => {
+      useSelectionStore.getState().setRoot(9) // A
+      useSelectionStore.getState().setQuality('7') // dominant 7th -> mixolydian
+    })
+    renderBar()
+    await act(async () => clickButton('Play scale'))
+    // A mixolydian: A, B, C♯, D, E, F♯, G — not A major (which has G♯, not G)
+    expect(audioEngine.playScale).toHaveBeenCalledWith([57, 59, 49, 50, 52, 54, 55])
+  })
+
   it('calls init() from the gesture before playback', async () => {
     renderBar()
     clickButton('Play chord')

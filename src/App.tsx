@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { chordFullName } from './musicCore'
 import { useSelectionStore } from './store/useSelectionStore'
 import Keyboard from './components/Keyboard'
+import NotesPanel from './components/NotesPanel'
 import RootSelector from './components/root-selector'
 import QualitySelector from './components/quality-selector'
 import KeyModeSelector from './components/key-mode-selector'
@@ -43,6 +44,8 @@ function App() {
           <RootSelector />
           <QualitySelector />
         </div>
+        <Keyboard showNoteNames={showNoteNames} />
+        <NotesPanel />
         <div className="controls-secondary">
           <KeyModeSelector />
           <div className="controls-row">
@@ -71,7 +74,6 @@ function App() {
             onChange={setShowNoteNames}
           />
         </div>
-        <Keyboard showNoteNames={showNoteNames} />
         <PlaybackBar />
         <ChordTypeExplorer />
       </main>

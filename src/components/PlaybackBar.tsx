@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { rootPositionVoice, scaleTones } from '../musicCore'
+import { chordScaleType, rootPositionVoice, scaleTones } from '../musicCore'
 import { useSelectionStore } from '../store/useSelectionStore'
 import * as audioEngine from '../audioEngine'
 import Button from './shared/Button'
@@ -17,7 +17,7 @@ export default function PlaybackBar() {
   const { root, quality, key, scaleMode } = selection
   const voice = rootPositionVoice({ root, quality })
   const scaleRoot = scaleMode === 'key' ? key.root : root
-  const scaleType = scaleMode === 'key' ? key.scaleType : 'major'
+  const scaleType = scaleMode === 'key' ? key.scaleType : chordScaleType(quality)
   const scale = scaleTones(scaleRoot, scaleType).map((pc) => 48 + pc)
 
   const run = (action: () => void) => {

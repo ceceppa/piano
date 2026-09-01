@@ -1,5 +1,5 @@
 import { useRef } from 'react'
-import { chordTones, noteName, scaleTones } from '../musicCore'
+import { chordScaleType, chordTones, noteName, scaleTones } from '../musicCore'
 import { useSelectionStore } from '../store/useSelectionStore'
 import * as audioEngine from '../audioEngine'
 import './Keyboard.css'
@@ -50,7 +50,7 @@ export default function Keyboard({ showNoteNames = false }: KeyboardProps) {
   const { root, quality, key, scaleMode, viewMode } = selection
   const chordSet = new Set(chordTones(root, quality))
   const scaleRoot = scaleMode === 'key' ? key.root : root
-  const scaleType = scaleMode === 'key' ? key.scaleType : 'major'
+  const scaleType = scaleMode === 'key' ? key.scaleType : chordScaleType(quality)
   const scaleSet = new Set(scaleTones(scaleRoot, scaleType))
 
   const midis = keyRange(storeOctaveStart, storeOctaveEnd)

@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import {
   chordFullName,
   chordName,
+  chordScaleType,
   chordTones,
   isRecommendedForGenre,
   noteName,
@@ -90,6 +91,38 @@ describe('scaleTones', () => {
   it('labels scales with the expected names', () => {
     expect(scaleLabel(C, 'major')).toBe('C major')
     expect(scaleLabel(A, 'naturalMinor')).toBe('A minor')
+  })
+})
+
+describe('chordScaleType', () => {
+  it('maps C augmented to the augmented scale, spelled per the phase-2 backlog record (E1a)', () => {
+    expect(asNotes(scaleTones(C, chordScaleType('augmented')))).toEqual([
+      'C', 'D♯', 'E', 'G', 'G♯', 'B',
+    ])
+  })
+
+  it('every catalogue quality maps to a scale containing all of its own chord tones, across several roots (E1b)', () => {
+    for (const root of [C, FS, A, DS]) {
+      for (const q of QUALITIES) {
+        const scale = new Set(scaleTones(root, chordScaleType(q.id)))
+        for (const tone of chordTones(root, q.id)) {
+          expect(scale.has(tone)).toBe(true)
+        }
+      }
+    }
+  })
+
+  it('matches the exact tech-spec §Chord-scale mapping table', () => {
+    const expected: Record<string, string> = {
+      major: 'major', sus2: 'major', sus4: 'major', '6': 'major', maj7: 'major', add9: 'major',
+      minor: 'naturalMinor', m7: 'naturalMinor',
+      diminished: 'locrian',
+      augmented: 'augmented',
+      '7': 'mixolydian', '9': 'mixolydian',
+    }
+    for (const q of QUALITIES) {
+      expect(chordScaleType(q.id)).toBe(expected[q.id])
+    }
   })
 })
 

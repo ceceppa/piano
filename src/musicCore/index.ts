@@ -1,4 +1,4 @@
-export { chordTones, chordName, chordFullName, isRecommendedForGenre, intervalsFor, variationsFor, QUALITIES, GENRES } from './qualities'
+export { chordTones, chordName, chordFullName, chordScaleType, isRecommendedForGenre, intervalsFor, variationsFor, QUALITIES, GENRES } from './qualities'
 export type { ChordQuality, QualityId, Variation, GenreId } from './qualities'
 export { SCALES, scaleTones, scaleLabel } from './scales'
 export type { ScaleType, ScaleTypeId } from './scales'

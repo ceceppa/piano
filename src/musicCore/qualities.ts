@@ -1,5 +1,6 @@
 import type { PitchClass } from './pitch'
 import { noteName } from './pitch'
+import type { ScaleTypeId } from './scales'
 
 export type QualityId =
   | 'major'
@@ -72,6 +73,28 @@ export function chordName(root: PitchClass, quality: QualityId): string {
 export function chordFullName(root: PitchClass, quality: QualityId): string {
   if (!QUALITY_BY_ID[quality]) throw new Error(`unknown chord quality: ${String(quality)}`)
   return `${noteName(root)} ${QUALITY_BY_ID[quality].name}`
+}
+
+/** The one catalogue scale containing every chord tone of `quality`, for chord-root mode (tech-spec §Chord-scale mapping). */
+const CHORD_SCALE_TYPE: Readonly<Record<QualityId, ScaleTypeId>> = {
+  major: 'major',
+  sus2: 'major',
+  sus4: 'major',
+  '6': 'major',
+  maj7: 'major',
+  add9: 'major',
+  minor: 'naturalMinor',
+  m7: 'naturalMinor',
+  diminished: 'locrian',
+  augmented: 'augmented',
+  '7': 'mixolydian',
+  '9': 'mixolydian',
+}
+
+export function chordScaleType(quality: QualityId): ScaleTypeId {
+  const scaleType = CHORD_SCALE_TYPE[quality]
+  if (!scaleType) throw new Error(`unknown chord quality: ${String(quality)}`)
+  return scaleType
 }
 
 export function isRecommendedForGenre(quality: QualityId, genre: GenreId): boolean {

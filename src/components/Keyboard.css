@@ -84,7 +84,7 @@
 }
 
 .key-scale-note {
-  border: 1px dashed var(--color-outline);
+  background: var(--color-scale-tone-muted);
 }
 
 .key-root {
@@ -129,10 +129,10 @@
 }
 
 .key .marker-scale-note {
-  width: 14px;
-  height: 14px;
+  width: 16px;
+  height: 16px;
   border-radius: 50%;
-  border: 2px solid color-mix(in srgb, var(--color-secondary) 30%, transparent);
+  border: 2px solid var(--color-secondary);
 }
 
 @media (min-width: 768px) {

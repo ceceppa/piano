@@ -41,6 +41,12 @@ node _mano/scripts/scaffold.js run --name piano-chord-explorer -- npm create vit
 |--------|--------|-------|
 | PitchClass | `value` 0–11 (C=0 … B=11), `label` ("C"…"B", sharps for accidentals) | §6.1: all 12 chromatic roots selectable |
 | ChordQuality | `id`, `intervals: number[]` (semitones), `suffix`, `name: string` (full readable name), `genreGuide: string[]`, `genres: GenreId[]` | catalogue = major, minor, diminished, augmented, sus2, sus4, 6, 7, maj7, m7, 9, add9. `name` and `genres` are additive fields on the existing 12 entries — no id/interval/suffix changes — so they don't trip the phase brief's "no changes to predefined catalogues" line; see the table below for exact values. |
+| GenreId | `'Any' \| 'Pop' \| 'Rock' \| 'Jazz' \| 'Blues' \| 'Classical'` | canonical genre catalogue; single source for the genre selector's options and for `ChordQuality.genres` matching — replaces the string literal previously local to the selector component |
+| ScaleType | `major`, `naturalMinor`, `augmented`, `locrian`, `mixolydian`; each with `intervals` | full catalogue in §Scale catalogue below — `augmented`/`locrian`/`mixolydian` are new this phase, so every `ChordQuality` has a scale that actually contains its own chord tones |
+| KeyContext | `root: PitchClass`, `scaleType: 'major' \| 'naturalMinor'` | the optional key/mode advanced control keeps its existing two-option range unchanged — the three new scale types are chord-driven only (§Chord-scale mapping), never user-selectable here |
+| Selection | `root`, `quality`, `key: KeyContext`, `scaleMode: 'chord-root'\|'key'`, `viewMode: 'chord'\|'scale'\|'both'`, `genre: GenreId` | default: C major, scaleMode `chord-root`, viewMode `both`, genre `Any` |
+| Voicing | `baseMidi: number[]`, `inversion: number` | Phase 1 always root-position close voicing (`inversion: 0`); concept reserved so later voicings/inversions extend, not rework |
+| DisplayRange | `startMidi`, `endMidi` | default 2 octaves from C3 (48–71); selectable so keys stay usable on mobile |
 
 **Chord quality — `name` and `genres` values (this phase).** `name` is the full readable word(s) used in the screen title (e.g. root "A" + name "diminished" → "A diminished"). `genres` is the structured tag set `isRecommendedForGenre` reads; it replaces parsing the free-text `genreGuide`, and an empty list is a valid outcome — that quality simply never shows a "Recommended" cue.
 
@@ -58,12 +64,24 @@ node _mano/scripts/scaffold.js run --name piano-chord-explorer -- npm create vit
 | m7 | minor seventh | `[Jazz]` |
 | 9 | dominant ninth | `[Jazz]` |
 | add9 | added ninth | `[]` |
-| GenreId | `'Any' \| 'Pop' \| 'Rock' \| 'Jazz' \| 'Blues' \| 'Classical'` | canonical genre catalogue; single source for the genre selector's options and for `ChordQuality.genres` matching — replaces the string literal previously local to the selector component |
-| ScaleType | `major`, `naturalMinor`; each with `intervals` | scale set this phase (§11 base) |
-| KeyContext | `root: PitchClass`, `scaleType` | the optional key/mode advanced control |
-| Selection | `root`, `quality`, `key: KeyContext`, `scaleMode: 'chord-root'\|'key'`, `viewMode: 'chord'\|'scale'\|'both'`, `genre: GenreId` | default: C major, scaleMode `chord-root`, viewMode `both`, genre `Any` |
-| Voicing | `baseMidi: number[]`, `inversion: number` | Phase 1 always root-position close voicing (`inversion: 0`); concept reserved so later voicings/inversions extend, not rework |
-| DisplayRange | `startMidi`, `endMidi` | default 2 octaves from C3 (48–71); selectable so keys stay usable on mobile |
+
+**Scale catalogue — new intervals (phase-3).** `augmented`, `locrian`, and `mixolydian` join the existing `major`/`naturalMinor` to fix the phase-2 bug: chord-root mode always showed the major scale regardless of quality, which produced correct markers only by accident for major-family chords.
+
+| id | intervals (semitones from root) |
+|---|---|
+| augmented | `[0, 3, 4, 7, 8, 11]` |
+| locrian | `[0, 1, 3, 5, 6, 8, 10]` |
+| mixolydian | `[0, 2, 4, 5, 7, 9, 10]` |
+
+**Chord-scale mapping (chord-root mode only).** `chordScaleType(quality)` returns the one `ScaleTypeId` whose scale contains every one of that quality's own chord tones on the same root — this *is* "the correct theoretical scale" the phase brief's Exit Criteria test. It applies only when `Selection.scaleMode === 'chord-root'`; in `'key'` mode the scale stays `KeyContext.scaleType`, unchanged and still limited to `major`/`naturalMinor`.
+
+| QualityId | ScaleTypeId | Why |
+|---|---|---|
+| major, sus2, sus4, 6, maj7, add9 | major | major third or no third; every chord tone is diatonic to major |
+| minor, m7 | naturalMinor | minor third with a natural (not flattened) seventh; every chord tone is diatonic to natural minor |
+| diminished | locrian | the standard chord-scale for a diminished triad (built on the 7th degree of a major key); the only catalogue scale containing the diminished 5th alongside the minor 3rd |
+| augmented | augmented | neither major (no ♯5) nor natural minor (no major 3rd) contains `{root, 3rd, ♯5}`; the augmented (symmetric hexatonic) scale does — confirmed against the phase-2 backlog's recorded correct notes for C augmented (`C, D♯, E, G, G♯, B`) |
+| 7, 9 | mixolydian | dominant (flattened-7th) chords; `major` has a natural 7th so cannot contain the chord's own ♭7 |
 
 ## Public / integration interface contracts
 
@@ -71,6 +89,7 @@ node _mano/scripts/scaffold.js run --name piano-chord-explorer -- npm create vit
 |---------|-----------------|-------------------|------------------|-------------------------------|
 | `musicCore` | `chordTones(root: PitchClass, quality: ChordQuality)` | — | `PitchClass[]`; unknown quality → throws | `quality.intervals` applied mod 12 |
 | `musicCore` | `scaleTones(root: PitchClass, scaleType: ScaleType = 'major')\|)` | — | `PitchClass[]` | `scaleType.intervals` applied mod 12 |
+| `musicCore` | `chordScaleType(quality: ChordQuality)` | — | `ScaleTypeId` | pure lookup, canonical mapping in §Chord-scale mapping; used only in `chord-root` mode — `key` mode keeps reading `KeyContext.scaleType` directly |
 | `musicCore` | `rootPositionVoice(chord)` | `chord: {root, quality}` | `number[]` MIDI notes in a default band around C3 | `chordTones` octave-shifted; always `inversion: 0` |
 | `musicCore` | `variationsFor(root, currentQuality)` | — | `{quality, name, genreGuide}[]` in catalogue order, excluding `currentQuality` | `ChordQuality` catalogue filtered |
 | `musicCore` | `chordName(root, quality)` | — | string (e.g. "A", "Am", "A7", "A♯") | PitchClass `label` + quality `suffix` |
@@ -93,6 +112,7 @@ No persistence this phase: the selection model is in-memory only (`useSelectionS
 - **AudioContext created on first user gesture.** Browsers block autoplay; every playback path (key press, play chord, scale, arpeggio) is reachable only through gestures, so a lazy `init()` on first interaction satisfies the policy.
 - **Theory engine is pure and dependency-free.** `musicCore` is pure functions → unit-testable in Vitest; UI and audio never compute intervals themselves.
 - **Single store drives "immediate see-and-hear."** Any selector update writes one `Selection`; keyboard highlights, variation panel, and playback read it reactively, so the screen and the sound always reflect the same selection.
+- **Chord-root scale is quality-derived, never hardcoded.** `chordScaleType` (§Chord-scale mapping) replaces the phase-2 behaviour of always showing the major scale in chord-root mode — the cause of the reported wrong-scale bug and, by the same logic, of every non-major-family quality being wrong whether or not it was reported.
 - **Genre recommends, never filters.** Selecting a genre marks matching chord-type tiles with a non-colour "Recommended" cue (text or icon, never colour alone, per the accessibility posture); no tile is hidden, reordered, or disabled. A hard filter could empty the tile grid for a genre few qualities are tagged with, which would violate "a useful default is always visible." The genre control keeps its existing secondary-control-row placement (§Screen Composition) — its behavioural link to the tile grid, not a relocation, is what makes it more than "a settings-style equal." Choosing `Any` clears the cue entirely rather than matching every tile — `isRecommendedForGenre` returns `false` for `Any` by contract, so no quality needs a `genres` entry naming it.
 
 ## Out of Scope

@@ -114,7 +114,10 @@ describe('Keyboard visualisation', () => {
     expect(states[64]).toBe('chord-tone') // E
     expect(states[67]).toBe('chord-tone') // G
     expect(states[62]).toBe('scale-note') // D
-    expect(states[49]).toBe('scale-note') // C♯3 (A major scale)
+    // A m7's chord-root scale is A natural minor (tech-spec §Chord-scale mapping), not
+    // A major — C♯ (49) is outside it; F3 (53) is the natural-minor-only tone instead.
+    expect(states[49]).toBe('plain')
+    expect(states[53]).toBe('scale-note') // F3 (A natural minor)
   })
 
   it('re-lays out keys when the octave range changes', () => {
