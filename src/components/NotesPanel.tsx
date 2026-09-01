@@ -1,13 +1,17 @@
-import { chordScaleType, chordTones, noteName, scaleTones } from '../musicCore'
+import { chordScaleType, noteName, scaleTones, voice } from '../musicCore'
 import { useSelectionStore } from '../store/useSelectionStore'
 import Card from './shared/Card'
 import './NotesPanel.css'
 
 export default function NotesPanel() {
   const selection = useSelectionStore((s) => s.selection)
-  const { root, quality, key, scaleMode, viewMode } = selection
+  const { root, quality, key, scaleMode, viewMode, inversion } = selection
 
-  const chordNotes = chordTones(root, quality).map(noteName).join(' · ')
+  // Bass to treble in the selected inversion (S2b+2, phase-4 correction) — the
+  // voicing type stays keyboard-only, so this always reads the close voicing.
+  const chordNotes = voice({ root, quality }, inversion, 'close')
+    .map((n) => noteName(n.midi % 12))
+    .join(' · ')
 
   const scaleRoot = scaleMode === 'key' ? key.root : root
   const scaleType = scaleMode === 'key' ? key.scaleType : chordScaleType(quality)
@@ -15,10 +19,12 @@ export default function NotesPanel() {
 
   return (
     <Card header="Notes" className="notes-panel">
-      <div className="notes-row">
-        <span className="notes-label">Chord:</span>
-        <span className="notes-value">{chordNotes}</span>
-      </div>
+      {viewMode !== 'scale' && (
+        <div className="notes-row">
+          <span className="notes-label">Chord:</span>
+          <span className="notes-value">{chordNotes}</span>
+        </div>
+      )}
       {viewMode !== 'chord' && (
         <div className="notes-row">
           <span className="notes-label">Scale:</span>

@@ -135,6 +135,81 @@
   border: 2px solid var(--color-secondary);
 }
 
+/* Voiced-instance outline (phase-4) — marks exactly the specific octave each
+   note of the current inversion/voicing sounds at, distinct from the
+   pitch-class-wide root/chord-tone/scale markers above (which mark every
+   occurrence of a pitch class regardless of voicing). This is what makes
+   close vs. open vs. left/right voicing visually distinguishable: the same
+   pitch classes stay marked everywhere, but a different specific set of
+   keys carries this outline. */
+.key-voiced {
+  outline: 2px solid var(--color-primary);
+  outline-offset: -2px;
+}
+
+/* Bass marker (phase-4, design-brief §Piano Keyboard) — a shape distinct from
+   root/chord-tone/scale markers, so it reads independently of colour. Renders
+   alongside whatever other marker the key already has. */
+.key.key-bass {
+  position: relative;
+}
+
+.key .marker-bass {
+  position: absolute;
+  left: 2px;
+  right: 2px;
+  bottom: 0;
+  height: 4px;
+  width: auto;
+  border-radius: 2px 2px 0 0;
+  background: var(--color-primary);
+}
+
+.key-black .marker-bass {
+  background: var(--color-on-primary);
+}
+
+/* Hand-grouping strip (phase-4, Left/Right-hands voicing only). */
+.hand-strip {
+  position: relative;
+  height: 22px;
+}
+
+.hand-bracket {
+  position: absolute;
+  top: 8px;
+  height: 3px;
+  border-radius: 2px;
+}
+
+.hand-bracket .hand-tag {
+  position: absolute;
+  left: 0;
+  top: -18px;
+  font: var(--text-label-mono);
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 4px;
+}
+
+.hand-bracket-left {
+  background: var(--color-primary);
+}
+
+.hand-bracket-left .hand-tag {
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+}
+
+.hand-bracket-right {
+  background: var(--color-secondary);
+}
+
+.hand-bracket-right .hand-tag {
+  background: var(--color-secondary);
+  color: var(--color-on-secondary);
+}
+
 @media (min-width: 768px) {
   .key-white {
     height: 240px;

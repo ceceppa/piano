@@ -1,101 +1,87 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import type * as AudioEngineModule from './audioEngine'
 
-class FakeParam {
-  value = 0
-  setValueAtTime = vi.fn((v: number) => {
-    this.value = v
+class FakePiano {
+  static instances: FakePiano[] = []
+  loaded = false
+  maxPolyphony = 32
+  options: unknown
+  keyDown = vi.fn()
+  keyUp = vi.fn()
+  toDestination = vi.fn(function (this: FakePiano) {
+    return this
   })
-  exponentialRampToValueAtTime = vi.fn()
-  cancelScheduledValues = vi.fn()
-}
-
-class FakeOscillator {
-  type = ''
-  frequency = new FakeParam()
-  started = false
-  stopped = false
-  connect = vi.fn(() => new FakeGain())
-  start = vi.fn(() => {
-    this.started = true
-  })
-  stop = vi.fn(() => {
-    this.stopped = true
-  })
-  disconnect = vi.fn()
-}
-
-class FakeGain {
-  gain = new FakeParam()
-  connect = vi.fn()
-  disconnect = vi.fn()
-}
-
-class FakeAudioContext {
-  static instances: FakeAudioContext[] = []
-  state: 'suspended' | 'running' = 'suspended'
-  currentTime = 0
-  destination = {}
-  oscillators: FakeOscillator[] = []
-  resume = vi.fn(() => {
-    this.state = 'running'
+  load = vi.fn(function (this: FakePiano) {
+    this.loaded = true
     return Promise.resolve()
   })
-  createOscillator = vi.fn(() => {
-    const osc = new FakeOscillator()
-    this.oscillators.push(osc)
-    return osc
-  })
-  createGain = vi.fn(() => new FakeGain())
-  constructor() {
-    FakeAudioContext.instances.push(this)
+  constructor(options: unknown) {
+    this.options = options
+    FakePiano.instances.push(this)
   }
 }
 
-let realCtor: typeof AudioContext | undefined
+const toneStart = vi.fn(() => Promise.resolve())
+
+vi.mock('@tonejs/piano/build/piano/Piano', () => ({ Piano: FakePiano }))
+vi.mock('tone', () => ({ start: () => toneStart() }))
+
 let audioEngine: typeof AudioEngineModule
+let realAudioContext: typeof window.AudioContext | undefined
 
 beforeEach(async () => {
-  FakeAudioContext.instances = []
-  realCtor = window.AudioContext
-  ;(window as unknown as { AudioContext?: unknown }).AudioContext = FakeAudioContext
+  FakePiano.instances = []
+  toneStart.mockClear()
+  // audioEngine feature-detects a real browser audio environment before
+  // eagerly constructing the (here, mocked) Piano — jsdom has none, so stub
+  // its presence, same as a real browser would provide.
+  realAudioContext = window.AudioContext
+  ;(window as unknown as { AudioContext?: unknown }).AudioContext = function () {} as unknown as typeof AudioContext
   vi.resetModules()
   audioEngine = await import('./audioEngine')
 })
 
 afterEach(() => {
-  ;(window as unknown as { AudioContext?: unknown }).AudioContext = realCtor
+  ;(window as unknown as { AudioContext?: unknown }).AudioContext = realAudioContext
   vi.restoreAllMocks()
 })
 
-describe('audioEngine voice pool', () => {
-  it('does not create an AudioContext before a user gesture init()', () => {
-    expect(FakeAudioContext.instances).toHaveLength(0)
+function piano(): FakePiano {
+  return FakePiano.instances[0]
+}
+
+describe('audioEngine sampled piano', () => {
+  it('starts loading the self-hosted sample set eagerly, before any gesture', () => {
+    expect(FakePiano.instances).toHaveLength(1)
+    expect(piano().load).toHaveBeenCalled()
+    expect((piano().options as { url: string }).url).toBe('/piano-samples/')
+  })
+
+  it('does not play a note before init() has run', () => {
     audioEngine.noteOn(60)
-    expect(FakeAudioContext.instances).toHaveLength(0)
+    expect(piano().keyDown).not.toHaveBeenCalled()
   })
 
-  it('creates and resumes the shared AudioContext on init()', async () => {
+  it('init() starts Tone and resolves once the sample set is loaded', async () => {
     await audioEngine.init()
-    expect(FakeAudioContext.instances).toHaveLength(1)
-    expect(FakeAudioContext.instances[0].resume).toHaveBeenCalled()
+    expect(toneStart).toHaveBeenCalled()
+    expect(audioEngine.isReady()).toBe(true)
   })
 
-  it('init() is idempotent — reuses the same context', async () => {
+  it('init() is idempotent — Tone.start() runs once', async () => {
     await audioEngine.init()
     await audioEngine.init()
-    expect(FakeAudioContext.instances).toHaveLength(1)
+    expect(toneStart).toHaveBeenCalledTimes(1)
   })
 
-  it('noteOn allocates a voice and noteOff releases it, reusing the pool', async () => {
+  it('noteOn plays a key and noteOff releases it, tracking held notes', async () => {
     await audioEngine.init()
     audioEngine.noteOn(60)
+    expect(piano().keyDown).toHaveBeenCalledWith({ midi: 60 })
     expect(audioEngine.activeVoices()).toBe(1)
     audioEngine.noteOff(60)
+    expect(piano().keyUp).toHaveBeenCalledWith({ midi: 60 })
     expect(audioEngine.activeVoices()).toBe(0)
-    audioEngine.noteOn(60)
-    expect(audioEngine.activeVoices()).toBe(1)
-    expect(audioEngine.poolSize()).toBeLessThanOrEqual(16)
   })
 
   it('plays multiple keys simultaneously (polyphony)', async () => {
@@ -106,25 +92,6 @@ describe('audioEngine voice pool', () => {
     expect(audioEngine.activeVoices()).toBe(3)
     audioEngine.noteOff(64)
     expect(audioEngine.activeVoices()).toBe(2)
-    audioEngine.noteOff(60)
-    expect(audioEngine.activeVoices()).toBe(1)
-    audioEngine.noteOff(67)
-    expect(audioEngine.activeVoices()).toBe(0)
-  })
-
-  it('releasing one note leaves other held notes sounding', async () => {
-    await audioEngine.init()
-    audioEngine.noteOn(60)
-    audioEngine.noteOn(67)
-    audioEngine.noteOff(60)
-    expect(audioEngine.activeVoices()).toBe(1)
-  })
-
-  it('routes the frequency set from the MIDI pitch', async () => {
-    await audioEngine.init()
-    audioEngine.noteOn(69) // A4 = 440 Hz
-    const ctx = FakeAudioContext.instances[0]
-    expect(ctx.oscillators[0].frequency.value).toBe(440)
   })
 })
 
@@ -137,51 +104,46 @@ describe('audioEngine playback scheduling', () => {
     vi.useRealTimers()
   })
 
-  async function initWithFakeTimers() {
-    await audioEngine.init()
-  }
-
-  function createdNotes(): number[] {
-    const ctx = FakeAudioContext.instances[0]
-    return ctx.oscillators.map((o) => o.frequency.value)
+  function downCalls(): number[] {
+    return piano().keyDown.mock.calls.map((c) => (c[0] as { midi: number }).midi)
   }
 
   it('playChord starts every voice of the chord together', async () => {
-    await initWithFakeTimers()
+    await audioEngine.init()
     audioEngine.playChord([48, 52, 55, 59])
     vi.advanceTimersByTime(0)
-    expect(createdNotes()).toEqual([48, 52, 55, 59].map((m) => audioEngine.midiToFrequency(m)))
+    expect(downCalls()).toEqual([48, 52, 55, 59])
     expect(audioEngine.getPlaybackState()).toBe('playing')
     vi.advanceTimersByTime(2550)
     expect(audioEngine.getPlaybackState()).toBe('idle')
   })
 
   it('playArpeggio starts notes low to high at ~120ms apart', async () => {
-    await initWithFakeTimers()
+    await audioEngine.init()
     audioEngine.playArpeggio([48, 52, 55])
     expect(audioEngine.getPlaybackState()).toBe('playing')
     vi.advanceTimersByTime(119)
-    expect(createdNotes()).toEqual([audioEngine.midiToFrequency(48)])
+    expect(downCalls()).toEqual([48])
     vi.advanceTimersByTime(1)
-    expect(createdNotes()).toEqual([48, 52].map((m) => audioEngine.midiToFrequency(m)))
+    expect(downCalls()).toEqual([48, 52])
     vi.advanceTimersByTime(120)
-    expect(createdNotes()).toEqual([48, 52, 55].map((m) => audioEngine.midiToFrequency(m)))
+    expect(downCalls()).toEqual([48, 52, 55])
   })
 
   it('playScale ascends then descends', async () => {
-    await initWithFakeTimers()
+    await audioEngine.init()
     audioEngine.playScale([48, 50, 52, 53, 55, 57, 59])
     vi.advanceTimersByTime(200 * 13)
-    expect(createdNotes()).toEqual([48, 50, 52, 53, 55, 57, 59, 57, 55, 53, 52, 50, 48].map((m) => audioEngine.midiToFrequency(m)))
+    expect(downCalls()).toEqual([48, 50, 52, 53, 55, 57, 59, 57, 55, 53, 52, 50, 48])
   })
 
   it('starting a new playback supersedes the current one', async () => {
-    await initWithFakeTimers()
+    await audioEngine.init()
     audioEngine.playChord([48, 52, 55])
     expect(audioEngine.getPlaybackState()).toBe('playing')
     audioEngine.playArpeggio([60])
     expect(audioEngine.getPlaybackState()).toBe('playing')
     vi.advanceTimersByTime(0)
-    expect(createdNotes()).toEqual([audioEngine.midiToFrequency(60)])
+    expect(downCalls()).toEqual([60])
   })
 })

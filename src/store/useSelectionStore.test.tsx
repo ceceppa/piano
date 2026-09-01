@@ -2,7 +2,7 @@ import { act } from 'react'
 import { createRoot, type Root } from 'react-dom/client'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { chordName } from '../musicCore'
-import { getSystemTheme, useSelectionStore } from './useSelectionStore'
+import { DEFAULT_OCTAVE_RANGE, getSystemTheme, useSelectionStore } from './useSelectionStore'
 
 let container: HTMLDivElement
 let root: Root
@@ -17,9 +17,11 @@ beforeEach(() => {
       scaleMode: 'chord-root',
       viewMode: 'both',
       genre: 'Any',
+      inversion: 0,
+      voicingType: 'close',
     },
-    octaveStart: 48,
-    octaveEnd: 71,
+    octaveStart: DEFAULT_OCTAVE_RANGE.startMidi,
+    octaveEnd: DEFAULT_OCTAVE_RANGE.endMidi,
   })
   container = document.createElement('div')
   document.body.appendChild(container)
@@ -42,6 +44,8 @@ export function storeSnapshot() {
     scaleMode: s.selection.scaleMode,
     viewMode: s.selection.viewMode,
     genre: s.selection.genre,
+    inversion: s.selection.inversion,
+    voicingType: s.selection.voicingType,
     octaveStart: s.octaveStart,
     octaveEnd: s.octaveEnd,
   }
@@ -71,12 +75,14 @@ describe('useSelectionStore defaults', () => {
     expect(snap.scaleMode).toBe('chord-root')
     expect(snap.viewMode).toBe('both')
     expect(snap.genre).toBe('Any')
+    expect(snap.inversion).toBe(0)
+    expect(snap.voicingType).toBe('close')
   })
 
-  it('defaults the octave range to two octaves from C3 (48–71)', () => {
+  it('defaults the octave range to three octaves from C3 (48–83)', () => {
     const snap = storeSnapshot()
     expect(snap.octaveStart).toBe(48)
-    expect(snap.octaveEnd).toBe(71)
+    expect(snap.octaveEnd).toBe(83)
   })
 })
 
@@ -117,6 +123,39 @@ describe('selection store actions', () => {
     expect(snap.genre).toBe('Blues')
     expect(snap.octaveStart).toBe(36)
     expect(snap.octaveEnd).toBe(47)
+  })
+
+  it('setInversion and setVoicingType update the selection independently', () => {
+    const { setInversion, setVoicingType } = useSelectionStore.getState()
+    act(() => {
+      setInversion(2)
+      setVoicingType('leftRight')
+    })
+    const snap = storeSnapshot()
+    expect(snap.inversion).toBe(2)
+    expect(snap.voicingType).toBe('leftRight')
+  })
+
+  it('clamps the inversion when a quality change makes it invalid', () => {
+    const { setQuality, setInversion } = useSelectionStore.getState()
+    act(() => {
+      setQuality('7') // 4 distinct tones: inversions 0-3
+      setInversion(3)
+    })
+    expect(storeSnapshot().inversion).toBe(3)
+    act(() => {
+      setQuality('major') // 3 distinct tones: inversions 0-2
+    })
+    expect(storeSnapshot().inversion).toBe(2)
+  })
+
+  it('leaves a still-valid inversion untouched across a quality change', () => {
+    const { setQuality, setInversion } = useSelectionStore.getState()
+    act(() => {
+      setInversion(1)
+      setQuality('maj7')
+    })
+    expect(storeSnapshot().inversion).toBe(1)
   })
 })
 

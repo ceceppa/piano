@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import type { PitchClass } from '../musicCore'
-import type { GenreId, QualityId, ScaleTypeId } from '../musicCore'
+import type { GenreId, QualityId, ScaleTypeId, VoicingType } from '../musicCore'
+import { validInversionCount } from '../musicCore'
 
 export type ScaleMode = 'chord-root' | 'key'
 export type ViewMode = 'chord' | 'scale' | 'both'
@@ -18,6 +19,8 @@ export interface Selection {
   scaleMode: ScaleMode
   viewMode: ViewMode
   genre: GenreId
+  inversion: number
+  voicingType: VoicingType
 }
 
 export interface OctaveRange {
@@ -39,11 +42,13 @@ interface SelectionState {
   setViewMode: (viewMode: ViewMode) => void
   setGenre: (genre: GenreId) => void
   setOctaveRange: (startMidi: number, endMidi: number) => void
+  setInversion: (inversion: number) => void
+  setVoicingType: (voicingType: VoicingType) => void
 }
 
 const C = 0
 
-export const DEFAULT_OCTAVE_RANGE: OctaveRange = { startMidi: 48, endMidi: 71 }
+export const DEFAULT_OCTAVE_RANGE: OctaveRange = { startMidi: 48, endMidi: 83 }
 
 export function getSystemTheme(): Theme {
   if (typeof window !== 'undefined' && typeof window.matchMedia === 'function') {
@@ -61,12 +66,19 @@ export const useSelectionStore = create<SelectionState>((set) => ({
     scaleMode: 'chord-root',
     viewMode: 'both',
     genre: 'Any',
+    inversion: 0,
+    voicingType: 'close',
   },
   octaveStart: DEFAULT_OCTAVE_RANGE.startMidi,
   octaveEnd: DEFAULT_OCTAVE_RANGE.endMidi,
   setTheme: (theme) => set({ theme }),
   setRoot: (root) => set((state) => ({ selection: { ...state.selection, root } })),
-  setQuality: (quality) => set((state) => ({ selection: { ...state.selection, quality } })),
+  setQuality: (quality) =>
+    set((state) => {
+      const maxInversion = validInversionCount({ root: state.selection.root, quality }) - 1
+      const inversion = Math.min(state.selection.inversion, maxInversion)
+      return { selection: { ...state.selection, quality, inversion } }
+    }),
   setKeyRoot: (root) =>
     set((state) => ({ selection: { ...state.selection, key: { ...state.selection.key, root } } })),
   setKeyScaleType: (scaleType) =>
@@ -76,4 +88,6 @@ export const useSelectionStore = create<SelectionState>((set) => ({
   setViewMode: (viewMode) => set((state) => ({ selection: { ...state.selection, viewMode } })),
   setGenre: (genre) => set((state) => ({ selection: { ...state.selection, genre } })),
   setOctaveRange: (startMidi, endMidi) => set({ octaveStart: startMidi, octaveEnd: endMidi }),
+  setInversion: (inversion) => set((state) => ({ selection: { ...state.selection, inversion } })),
+  setVoicingType: (voicingType) => set((state) => ({ selection: { ...state.selection, voicingType } })),
 }))

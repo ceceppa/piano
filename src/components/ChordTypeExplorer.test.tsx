@@ -30,6 +30,8 @@ function resetStore() {
       scaleMode: 'chord-root',
       viewMode: 'both',
       genre: 'Any',
+      inversion: 0,
+      voicingType: 'close',
     },
     octaveStart: 48,
     octaveEnd: 71,

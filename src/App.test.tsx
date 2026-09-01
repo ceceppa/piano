@@ -28,6 +28,8 @@ beforeEach(() => {
       scaleMode: 'chord-root',
       viewMode: 'both',
       genre: 'Any',
+      inversion: 0,
+      voicingType: 'close',
     },
     octaveStart: 48,
     octaveEnd: 71,
@@ -115,6 +117,8 @@ describe('App theme wiring', () => {
     expect(secondary).not.toBeNull()
     expect(dominant?.querySelector('[role="radiogroup"][aria-label*="Root"]')).not.toBeNull()
     expect(dominant?.querySelector('select')).not.toBeNull() // chord quality
+    expect(dominant?.querySelector('[role="radiogroup"][aria-label="Inversion"]')).not.toBeNull()
+    expect(dominant?.querySelector('[role="radiogroup"][aria-label="Voicing"]')).not.toBeNull()
     expect(secondary?.querySelector('[role="radiogroup"][aria-label*="Scale follows"]')).not.toBeNull()
     expect(secondary?.querySelector('[role="radiogroup"][aria-label*="View mode"]')).not.toBeNull()
     // No large bordered form card around the control area any more.
@@ -165,6 +169,37 @@ describe('App theme wiring', () => {
     // F3 is a locrian scale tone and not a Cdim chord tone.
     const fKey = container.querySelector<HTMLElement>('[data-midi="53"]')!
     expect(fKey.dataset.state).toBe('scale-note')
+  })
+
+  it('shows the slash-chord label and inversion name only when the inversion is not root position (phase-4)', () => {
+    renderApp()
+    expect(container.querySelector('.chord-title')?.textContent).toBe('C major')
+    expect(container.querySelector('.slash-label')).toBeNull()
+    act(() => {
+      useSelectionStore.getState().setQuality('7')
+      useSelectionStore.getState().setInversion(1)
+    })
+    expect(container.querySelector('.slash-label')?.textContent).toBe('C7/E')
+    expect(container.querySelector('.inversion-name')?.textContent).toBe('1st inversion')
+    act(() => {
+      useSelectionStore.getState().setInversion(0)
+    })
+    expect(container.querySelector('.slash-label')).toBeNull()
+  })
+
+  it('picking an inversion or voicing from the Arrangement controls updates the store and the keyboard together (phase-4)', () => {
+    renderApp()
+    const inversionGroup = container.querySelector('[aria-label="Inversion"]')!
+    const secondInversionButton = [...inversionGroup.querySelectorAll('button')].find(
+      (b) => b.textContent === '2nd inversion',
+    )!
+    act(() => secondInversionButton.click())
+    expect(useSelectionStore.getState().selection.inversion).toBe(2)
+
+    const voicingGroup = container.querySelector('[aria-label="Voicing"]')!
+    const openButton = [...voicingGroup.querySelectorAll('button')].find((b) => b.textContent === 'Open')!
+    act(() => openButton.click())
+    expect(useSelectionStore.getState().selection.voicingType).toBe('open')
   })
 
   it('tapping a chord-type tile updates the store quality and the keyboard highlights end-to-end', () => {

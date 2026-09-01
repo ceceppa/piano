@@ -7,14 +7,14 @@
 | Runtime / framework | Vite + React + TypeScript, single-page client app, no server |
 | Language | TypeScript |
 | Data / storage | In-memory React state (zustand); no persistence this phase |
-| Main interfaces | `musicCore` (theory engine), `audioEngine` (Web Audio playback) |
+| Main interfaces | `musicCore` (theory engine + inversions/voicings), `audioEngine` (`@tonejs/piano` sampled playback) |
 | Testing | Vitest for the theory engine; oxlint via existing `.oxlintrc.json` |
-| Key constraints | Offline-first, zero runtime network deps; audio must start from a user gesture; colours never sole indicator |
+| Key constraints | Offline-first, zero runtime network deps (piano samples self-hosted, not fetched from a third-party host); audio must start from a user gesture; colours never sole indicator |
 
 ## Tech stack
 
 - **Vite + React + TypeScript** — responsive browser application per the stated platform (`"Platform: Responsive browser application"`). No SSR, no router needed for a single Explore screen.
-- **Web Audio API** — native oscillators + gain envelopes; no audio library. A short-lived, polyphonic voice pool provides multi-key playback with zero dependencies.
+- **Tone.js + `@tonejs/piano`** — sampled acoustic piano instrument for chord, inversion, voicing, and scale playback, per the stated preference (see `## Stated Technical Preferences` in the phase brief). Replaces the previous native-oscillator voice pool. The sample set is self-hosted under the app's own static assets rather than the library's default remote host, so playback keeps working offline after install (§Out of Scope).
 - **zustand** — one lightweight store for the selection model and view state, so keyboard, variation panel, and playback controls all react without prop drilling.
 - **oxlint** — already configured at the project root (`.oxlintrc.json`, react/typescript/oxc plugins); kept as the linter.
 - **Vitest** — unit tests for the pure music-theory functions.
@@ -31,7 +31,7 @@ node _mano/scripts/scaffold.js run --name piano-chord-explorer -- npm create vit
 |----------|----------|-----|---------|
 | Framework | React + Vite (TS template) | smallest complete SPA for a playable keyboard | via scaffold above |
 | State | zustand | shared reactive selection across components | `npm install zustand@latest` |
-| Audio | Web Audio API (native) | polyphonic oscillators, no dependency, fully offline | none |
+| Audio | Tone.js + `@tonejs/piano`, samples self-hosted | realistic piano timbre (stated preference); self-hosting keeps it offline-first | `npm install tone@latest @tonejs/piano@latest` |
 | Testing | Vitest + jsdom | pure theory engine unit tests | `npm install -D vitest@latest jsdom@latest` |
 | Lint | oxlint | already pinned in `.oxlintrc.json` | `npm install -D oxlint@latest` |
 
@@ -44,9 +44,9 @@ node _mano/scripts/scaffold.js run --name piano-chord-explorer -- npm create vit
 | GenreId | `'Any' \| 'Pop' \| 'Rock' \| 'Jazz' \| 'Blues' \| 'Classical'` | canonical genre catalogue; single source for the genre selector's options and for `ChordQuality.genres` matching — replaces the string literal previously local to the selector component |
 | ScaleType | `major`, `naturalMinor`, `augmented`, `locrian`, `mixolydian`, `diminished`; each with `formula: IntervalFormula[]` (see §Interval formula notation) | full catalogue in §Scale catalogue below; every `ChordQuality` has a scale that actually contains its own chord tones (§Chord-scale mapping). `locrian` and `diminished` are two distinct 7-note/8-note scales, never the same entry — see §Chord-scale mapping |
 | KeyContext | `root: PitchClass`, `scaleType: 'major' \| 'naturalMinor'` | the optional key/mode advanced control keeps its existing two-option range unchanged — `augmented`/`locrian`/`mixolydian`/`diminished` are chord-driven only (§Chord-scale mapping), never user-selectable here |
-| Selection | `root`, `quality`, `key: KeyContext`, `scaleMode: 'chord-root'\|'key'`, `viewMode: 'chord'\|'scale'\|'both'`, `genre: GenreId` | default: C major, scaleMode `chord-root`, viewMode `both`, genre `Any` |
-| Voicing | `baseMidi: number[]`, `inversion: number` | Phase 1 always root-position close voicing (`inversion: 0`); concept reserved so later voicings/inversions extend, not rework |
-| DisplayRange | `startMidi`, `endMidi` | default 2 octaves from C3 (48–71); selectable so keys stay usable on mobile |
+| Selection | `root`, `quality`, `key: KeyContext`, `scaleMode: 'chord-root'\|'key'`, `viewMode: 'chord'\|'scale'\|'both'`, `genre: GenreId`, `inversion: number`, `voicingType: 'close'\|'open'\|'leftRight'` | default: C major, scaleMode `chord-root`, viewMode `both`, genre `Any`, inversion `0`, voicingType `close`. `inversion` and `voicingType` vary independently (any voicing combines with any inversion). When `quality` changes and `inversion >= validInversionCount(newQuality)`, `inversion` clamps to `validInversionCount(newQuality) - 1` |
+| Voicing | `type: 'close'\|'open'\|'leftRight'`, `inversion: number` (0 = root position; valid range `0…validInversionCount(quality)-1`), `notes: { midi: number; hand?: 'left'\|'right' }[]` (ascending bass→treble; bass = `notes[0]`; `hand` set only for `leftRight`) | computed by `musicCore.voice` (§Voicing algorithms); replaces the phase-1 always-root-position placeholder now that inversions/voicings ship |
+| DisplayRange | `startMidi`, `endMidi` | default 2 octaves from C3 (48–71); selectable so keys stay usable on mobile. The keyboard's **effective** low bound is derived, not stored: `effectiveStartMidi = Math.min(startMidi, currentVoicedBassMidi)` — computed fresh from the current `Voicing.notes` on every render, never persisted. `endMidi` is untouched. This is why the low bound relaxes and tightens automatically as the voicing changes, with no explicit "revert" step to implement |
 
 **Interval formula notation.** `ChordQuality.formula` and `ScaleType.formula` both use the standard scale-degree formula, not raw semitone counts: `"1"` is the root, degrees `2`–`7` and `9` are counted on the major scale, and a single leading `b` or `#` marks a degree lowered or raised one semitone from its major-scale position (e.g. minor triad = `1, b3, 5`; dominant 7th = `1, 3, 5, b7`). This is the convention most theory references and musicians already use, and it reads as self-checking — a wrong degree or missing accidental is visible on sight, unlike a raw semitone array.
 
@@ -101,26 +101,31 @@ node _mano/scripts/scaffold.js run --name piano-chord-explorer -- npm create vit
 | `musicCore` | `chordTones(root: PitchClass, quality: ChordQuality)` | — | `PitchClass[]`; unknown quality → throws | `quality.formula` parsed via `degreeToSemitone` (§Interval formula notation), summed with root, mod 12 |
 | `musicCore` | `scaleTones(root: PitchClass, scaleType: ScaleType = 'major')\|)` | — | `PitchClass[]` | `scaleType.formula` parsed via `degreeToSemitone`, summed with root, mod 12 |
 | `musicCore` | `chordScaleType(quality: ChordQuality)` | — | `ScaleTypeId` | pure lookup, canonical mapping in §Chord-scale mapping; used only in `chord-root` mode — `key` mode keeps reading `KeyContext.scaleType` directly |
-| `musicCore` | `rootPositionVoice(chord)` | `chord: {root, quality}` | `number[]` MIDI notes in a default band around C3 | `chordTones` octave-shifted; always `inversion: 0` |
+| `musicCore` | `rootPositionVoice(chord)` | `chord: {root, quality}` | `number[]` MIDI notes in a default band around C3 | equivalent to `voice(chord, 0, 'close').map(n => n.midi)`; kept for existing callers |
+| `musicCore` | `validInversionCount(chord: ChordRef)` | — | `number` (root position + every inversion) | `intervalsFor(chord.quality).length` — distinct chord tones |
+| `musicCore` | `voice(chord: ChordRef, inversion: number, type: VoicingType = 'close')` | `inversion` clamped to `[0, validInversionCount(chord)-1]` | `VoicedNote[]`, ascending bass→treble | §Voicing algorithms below |
+| `musicCore` | `inversionName(inversion: number)` | — | string ("Root position", "1st inversion", "2nd inversion", …) | ordinal of `inversion`; `0` → "Root position" |
+| `musicCore` | `slashChordLabel(chord: ChordRef, inversion: number)` | — | string \| `null` | `null` when `inversion === 0`; else `` `${chordName(chord)}/${noteName(bassPitchClass)}` `` |
 | `musicCore` | `variationsFor(root, currentQuality)` | — | `{quality, name, genreGuide}[]` in catalogue order, excluding `currentQuality` | `ChordQuality` catalogue filtered |
 | `musicCore` | `chordName(root, quality)` | — | string (e.g. "A", "Am", "A7", "A♯") | PitchClass `label` + quality `suffix` |
 | `musicCore` | `chordFullName(root: PitchClass, quality: ChordQuality)` | — | string (e.g. "A diminished") | PitchClass `label` + quality `name`, space-joined |
 | `musicCore` | `isRecommendedForGenre(quality: ChordQuality, genre: GenreId)` | — | `boolean` | `true` only when `quality.genres` includes `genre`; always `false` for `genre === 'Any'` — "Any" is not a wildcard match, it shows no recommendation cue on any tile (phase brief E4c); pure lookup, no matching against free-text `genreGuide` |
-| `audioEngine` | `init()` | — | `Promise<void>`; resolves/resumes on a user gesture | lazily creates + resumes shared `AudioContext` |
-| `audioEngine` | `noteOn(midi: number)` | — | plays immediately; silently no-ops if not initialised / not resumed | allocates a voice from pool |
-| `audioEngine` | `noteOff(midi: number)` | — | releases the playing voice | maps release to allocated voice |
-| `audioEngine` | `playChord(voice: number[])` | ~2.5s held | stops current playback, plays the exact displayed voicing/inversion | voices scheduled from `voice` |
-| `audioEngine` | `playArpeggio(voice: number[])` | ~120ms per note | rolls notes sequentially | same voice set, staggered |
+| `audioEngine` | `init()` | — | `Promise<void>`; resolves once `Tone.start()` has run (on a user gesture) and the self-hosted `@tonejs/piano` sample set has loaded | `piano.load()` starts eagerly at module load (no gesture needed for asset fetch); `Tone.start()` gated on first gesture as before; `init()` awaits both |
+| `audioEngine` | `noteOn(midi: number)` | — | plays immediately; silently no-ops if not initialised / not resumed | `Piano.keyDown({ midi })`; polyphony/voice-stealing handled internally by Tone.js |
+| `audioEngine` | `noteOff(midi: number)` | — | releases the playing voice | `Piano.keyUp({ midi })` |
+| `audioEngine` | `playChord(voice: number[])` | ~2.5s held | stops current playback, plays the exact displayed voicing/inversion | `keyDown`/`keyUp` pairs scheduled from `voice`'s exact MIDI notes (§Voicing algorithms) |
+| `audioEngine` | `playArpeggio(voice: number[])` | ~120ms per note | rolls notes sequentially | same voice set, staggered `keyDown`/`keyUp` pairs |
 | `audioEngine` | `playScale(scale: number[], pattern = 'updown')` | ~200ms per note | plays the scale ascending then descending | notes from `scaleTones` mapped to MIDI band |
 
 ## Storage strategy
 
-No persistence this phase: the selection model is in-memory only (`useSelectionStore`). Local data, favourites, and backup are deliberately later phases; nothing about the store shape assumes them.
+No persistence this phase: the selection model is in-memory only (`useSelectionStore`). Local data, favourites, and backup are deliberately later phases; nothing about the store shape assumes them. Piano sample files ship as static build assets; no user data is written for them.
 
 ## Key technical decisions
 
-- **Voice pool, not per-note nodes.** Polyphony uses a fixed pool of oscillator+gain pairs; `noteOn` allocates the next free voice so simultaneous key presses sound together while avoiding unbounded node creation.
-- **AudioContext created on first user gesture.** Browsers block autoplay; every playback path (key press, play chord, scale, arpeggio) is reachable only through gestures, so a lazy `init()` on first interaction satisfies the policy.
+- **Sampled piano via Tone.js, self-hosted samples.** `@tonejs/piano` replaces the previous oscillator voice pool; Tone.js handles polyphony/voice-stealing internally. The sample sprite files are copied into the app's own static assets and `Piano` is constructed with a `baseUrl` pointing at them, instead of the library's default remote CDN host — this is what keeps playback offline-first after install (§Out of Scope), not an override of the stated `@tonejs/piano` choice itself.
+- **Sample load starts eagerly; gesture only gates playback start.** `piano.load()` begins at module load (fetching local static assets needs no gesture); `Tone.start()` still waits for the first user gesture per the autoplay policy. `init()`/`isReady()` reflect both being ready.
+- **Voicing algorithms (§Data model → Voicing).** `voice(chord, inversion, type)`: (1) rotate `intervalsFor(chord.quality)` left by `inversion` positions, adding 12 to each wrapped-around entry, giving ascending bass→treble offsets from the root — this is the inversion; (2) for `type: 'open'`, then raise every other note starting from the second-lowest (indices 1, 3, …) up one octave and re-sort ascending; (3) for `type: 'leftRight'`, drop the bass note (index 0) one octave and tag it `hand: 'left'`, tag the remaining notes `hand: 'right'`, unchanged in pitch; `close` applies neither transform. All three types are defined for every `inversion` value, so no voicing×inversion combination is invalid.
 - **Theory engine is pure and dependency-free.** `musicCore` is pure functions → unit-testable in Vitest; UI and audio never compute intervals themselves.
 - **Single store drives "immediate see-and-hear."** Any selector update writes one `Selection`; keyboard highlights, variation panel, and playback read it reactively, so the screen and the sound always reflect the same selection.
 - **Chord-root scale is quality-derived, never hardcoded.** `chordScaleType` (§Chord-scale mapping) replaces the phase-2 behaviour of always showing the major scale in chord-root mode — the cause of the reported wrong-scale bug and, by the same logic, of every non-major-family quality being wrong whether or not it was reported.
@@ -128,19 +133,20 @@ No persistence this phase: the selection model is in-memory only (`useSelectionS
 
 ## Out of Scope
 
-Architectural commitments, not phase scope. This app stays fully client-side: no backend service, no accounts, and no external/third-party APIs at runtime — required for offline-first use after install.
+Architectural commitments, not phase scope. This app stays fully client-side: no backend service, no accounts, and no external/third-party APIs at runtime — required for offline-first use after install. The `@tonejs/piano` sample audio files are bundled as static build assets and self-hosted from the app's own origin; they are fetched once like any other static asset, not called as a third-party API at runtime.
 
 ## Platform constraints
 
-- **Autoplay policy:** audio requires a user gesture; on iOS/mobile the first touch must also `resume()` the context.
+- **Autoplay policy:** audio requires a user gesture (`Tone.start()`); on iOS/mobile the first touch must also resume Tone's context.
+- **Sample load:** the self-hosted `@tonejs/piano` sample set is fetched once per visit (`piano.load()`, browser-cached thereafter). Playback that fires before it resolves must no-op rather than error, same as the existing not-initialised behaviour.
 - **Polyphony:** desktop keys give simultaneous presses; mobile touch may be single-point. Keys must play singly everywhere and polyphonically wherever the input method allows.
 - **Small screens:** the octave-range control must keep keys usable without unbounded shrinking; horizontal scroll is acceptable.
-- **Latency:** a press must sound immediately (budget ≤ ~50 ms perceived); no network or deferred audio buffering.
+- **Latency:** a press must sound immediately (budget ≤ ~50 ms perceived sample-trigger latency); no network round-trip on the playback path itself (the one-time sample fetch happens ahead of it, per above).
 
 ## Product principle constraints
 
 - **"Select something and immediately see and hear the musical result"** → selection change must re-render highlights and be audible in the same gesture, with no extra "apply" step.
-- **Accessibility posture** → chord tones, scale notes, root, and bass states must be distinguishable without colour alone; playback state needs non-colour indication.
+- **Accessibility posture** → chord tones, scale notes, root, and bass states must be distinguishable without colour alone; playback state and the `leftRight` voicing's hand grouping both need a non-colour indicator (text or motion) alongside any colour treatment.
 - **A useful default is always visible** → first load renders C major before any user input.
 
 ## Cross-environment boundaries

@@ -4,6 +4,8 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import Keyboard from './Keyboard'
 import RootSelector from './root-selector'
 import QualitySelector from './quality-selector'
+import InversionSelector from './inversion-selector'
+import VoicingSelector from './voicing-selector'
 import KeyModeSelector from './key-mode-selector'
 import ScaleFollow from './scale-follow'
 import ViewModeSelector from './view-mode-selector'
@@ -23,6 +25,8 @@ function resetStore() {
       scaleMode: 'chord-root',
       viewMode: 'both',
       genre: 'Any',
+      inversion: 0,
+      voicingType: 'close',
     },
     octaveStart: 48,
     octaveEnd: 71,
@@ -88,6 +92,8 @@ function renderExplore() {
       <>
         <RootSelector />
         <QualitySelector />
+        <InversionSelector />
+        <VoicingSelector />
         <KeyModeSelector />
         <ScaleFollow />
         <ViewModeSelector />
@@ -174,5 +180,29 @@ describe('musical selectors', () => {
     change(selectFor('Genre context'), 'Blues')
     expect(useSelectionStore.getState().selection.genre).toBe('Blues')
     expect(keyStates()[48]).toBe(before)
+  })
+
+  it('offers only as many inversions as the current chord quality has, and updates on selection (E2a, phase-4)', () => {
+    renderExplore()
+    const group = () =>
+      [...container.querySelectorAll('[role="radiogroup"]')].find((g) => g.getAttribute('aria-label') === 'Inversion')!
+    expect(group().querySelectorAll('[role="radio"]')).toHaveLength(3) // major triad: root, 1st, 2nd
+    change(selectFor('Chord quality'), '7') // dominant 7th: 4 distinct tones
+    expect(group().querySelectorAll('[role="radio"]')).toHaveLength(4)
+    clickRadio(segRadio('Inversion', '2nd inversion'))
+    expect(useSelectionStore.getState().selection.inversion).toBe(2)
+  })
+
+  it('offers Close, Open, and Left/Right hands voicing, independent of inversion (E3a, phase-4)', () => {
+    renderExplore()
+    const options = [...container.querySelectorAll('[role="radiogroup"][aria-label="Voicing"] [role="radio"]')].map(
+      (o) => o.textContent,
+    )
+    expect(options).toEqual(['Close', 'Open', 'Left/Right hands'])
+    clickRadio(segRadio('Voicing', 'Left/Right hands'))
+    expect(useSelectionStore.getState().selection.voicingType).toBe('leftRight')
+    clickRadio(segRadio('Inversion', '1st inversion'))
+    expect(useSelectionStore.getState().selection.inversion).toBe(1)
+    expect(useSelectionStore.getState().selection.voicingType).toBe('leftRight')
   })
 })

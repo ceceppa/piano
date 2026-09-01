@@ -30,8 +30,6 @@
 |---|---------|--------|
 | R1 | we need to update the code using the correct updated formulas and also… | resolved |
 | R2 | sync diminished chord-scale mapping and add the diminished scale | resolved |
-| R3 | Q2 - yes, but I'd show the scale ones tho. Now it repeats across all th… | pending |
-| R4 | Actually one exit criteria E3b — partially met: when I select "scale" I… | pending |
 
 ## Row Contracts
 

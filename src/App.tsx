@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react'
-import { chordFullName } from './musicCore'
+import { chordFullName, inversionName, slashChordLabel } from './musicCore'
 import { useSelectionStore } from './store/useSelectionStore'
 import Keyboard from './components/Keyboard'
 import NotesPanel from './components/NotesPanel'
 import RootSelector from './components/root-selector'
 import QualitySelector from './components/quality-selector'
+import InversionSelector from './components/inversion-selector'
+import VoicingSelector from './components/voicing-selector'
 import KeyModeSelector from './components/key-mode-selector'
 import ScaleFollow from './components/scale-follow'
 import ViewModeSelector from './components/view-mode-selector'
@@ -38,11 +40,24 @@ function App() {
           onChange={(dark) => setTheme(dark ? 'dark' : 'light')}
         />
       </header>
-      <h2 className="chord-title">{chordFullName(selection.root, selection.quality)}</h2>
+      <h2 className="chord-title">
+        {chordFullName(selection.root, selection.quality)}
+        {selection.inversion !== 0 && (
+          <>
+            {' '}
+            <span className="slash-label">
+              {slashChordLabel({ root: selection.root, quality: selection.quality }, selection.inversion)}
+            </span>{' '}
+            <span className="inversion-name">{inversionName(selection.inversion)}</span>
+          </>
+        )}
+      </h2>
       <main className="explore" aria-label="Explore">
         <div className="controls-dominant">
           <RootSelector />
           <QualitySelector />
+          <InversionSelector />
+          <VoicingSelector />
         </div>
         <Keyboard showNoteNames={showNoteNames} />
         <NotesPanel />

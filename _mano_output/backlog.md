@@ -127,7 +127,7 @@
   Root position, first, second, third when the chord has four distinct tones, further when five or more.
   Each shows ordered notes bass to treble, matching keys, bass note with distinct marker, slash-chord notation (A/C♯, A/E), inversion name and a playback action.
   Changing inversion updates the existing keyboard rather than opening a separate screen.
-- **Status:** backlog
+- **Status:** in-phase-4
 
 ### Open voicings and left/right-hand arrangements as a separate concept
 - **Type:** feature
@@ -135,7 +135,7 @@
 - **Context:**
   Distinct from inversions: describes note distribution (close, open, left/right-hand) rather than only the bass note.
   Open and genre-specific voicings are within the product capability scope (section 11).
-- **Status:** backlog
+- **Status:** in-phase-4
 
 ### Playing style and performance controls over the current selection
 - **Type:** feature
@@ -516,14 +516,14 @@
 - **Source:** phase-3 review
 - **Context:**
   Scale-tone markers currently repeat identically in every octave/section of the keyboard, which reads as confusing. Show them once, starting from the scale's first visible root note.
-- **Status:** backlog
+- **Status:** in-phase-4
 
 ### Scale-only view still shows chord notes
 - **Type:** bug
 - **Source:** phase-3 review
 - **Context:**
   With View mode set to scale, the notes panel still shows the chord's notes. The user wants only the scale's notes displayed in that mode.
-- **Status:** backlog
+- **Status:** in-phase-4
 
 ### Open decision: canonical chord-to-scale mapping formulas
 - **Type:** spec-gap
@@ -531,7 +531,7 @@
 - **Context:**
   Tech spec must state the canonical chord-quality-to-scale mapping formulas, including the locrian scale.
   we need to update the code using the correct updated formulas and also adding locrian scale as we mixed them before
-- **Status:** backlog
+- **Status:** resolved
 
 ### Open decision: diminished chord-scale mapping
 - **Type:** spec-gap
@@ -539,4 +539,11 @@
 - **Context:**
   Tech spec must state the diminished chord's scale mapping and include the diminished scale.
   sync diminished chord-scale mapping and add the diminished scale
-- **Status:** backlog
+- **Status:** resolved
+
+### More realistic piano sound
+- **Type:** refinement
+- **Context:**
+  Current piano playback sound is irritating; needs a more realistic timbre.
+  User stated preference: "we need to add @tonejs/piano for a more realisting piano sound as the current one is irritating"
+- **Status:** in-phase-4

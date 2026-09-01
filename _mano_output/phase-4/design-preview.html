@@ -1,0 +1,296 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Piano Chord Explorer — Phase 4 design preview</title>
+<style>
+  :root[data-theme='light'] {
+    --color-background: #F8F9FA;
+    --color-surface: #FFFFFF;
+    --color-surface-low: #F3F4F5;
+    --color-surface-high: #E7E8E9;
+    --color-on-surface: #191C1D;
+    --color-on-surface-variant: #45474B;
+    --color-primary: #02040A;
+    --color-on-primary: #FFFFFF;
+    --color-secondary: #0040E0;
+    --color-on-secondary: #FFFFFF;
+    --color-tertiary: #735C00;
+    --color-on-tertiary: #FFFFFF;
+    --color-outline: #76777C;
+    --color-outline-variant: #C6C6CB;
+    --color-key-white: #FFFFFF;
+    --color-key-black: #121417;
+    --color-scale-tone-muted: #E2E8F0;
+  }
+  :root[data-theme='dark'] {
+    --color-background: #202224;
+    --color-surface: #26282A;
+    --color-surface-low: #2B2D2F;
+    --color-surface-high: #36383A;
+    --color-on-surface: #E1E3E4;
+    --color-on-surface-variant: #C6C8C9;
+    --color-primary: #C3C6D1;
+    --color-on-primary: #1A1E26;
+    --color-secondary: #B8C3FF;
+    --color-on-secondary: #0035BE;
+    --color-tertiary: #E9C349;
+    --color-on-tertiary: #4E3D00;
+    --color-outline: #8F9293;
+    --color-outline-variant: #45474B;
+    --color-key-white: #F1F2F2;
+    --color-key-black: #0D0E0F;
+    --color-scale-tone-muted: #3C3E41;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--color-background);
+    color: var(--color-on-surface);
+    font-family: 'Inter', system-ui, sans-serif;
+  }
+  .headline { font-family: 'Hanken Grotesk', system-ui, sans-serif; }
+  .mono { font-family: 'JetBrains Mono', 'Courier New', monospace; }
+  .wrap { max-width: 1280px; margin: 0 auto; padding: 24px; }
+
+  header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding-bottom: 16px; border-bottom: 1px solid var(--color-outline-variant);
+    margin-bottom: 20px;
+  }
+  header h1 { font-size: 24px; font-weight: 600; margin: 0; }
+  .toggle {
+    display: flex; align-items: center; gap: 8px;
+    font-family: 'JetBrains Mono', monospace; font-size: 13px;
+    color: var(--color-on-surface-variant);
+  }
+  .switch {
+    width: 40px; height: 22px; border-radius: 9999px;
+    background: var(--color-secondary); position: relative; cursor: pointer; border: none;
+  }
+  .switch::after {
+    content: ''; position: absolute; top: 2px; right: 2px;
+    width: 18px; height: 18px; border-radius: 50%; background: var(--color-surface);
+  }
+
+  .chord-title-row { display: flex; align-items: baseline; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; }
+  .chord-title { font-size: 40px; font-weight: 700; letter-spacing: -0.02em; margin: 0; }
+  .slash-label { font-size: 20px; font-weight: 600; color: var(--color-on-surface); }
+  .inversion-name { font-size: 14px; color: var(--color-on-surface-variant); }
+
+  .dominant-row { display: flex; flex-wrap: wrap; gap: 20px; align-items: flex-end; margin-bottom: 20px; }
+  .field label { display: block; font-family: 'JetBrains Mono', monospace; font-size: 13px; letter-spacing: 0.05em; color: var(--color-on-surface-variant); margin-bottom: 6px; text-transform: uppercase; }
+
+  .segmented { display: inline-flex; border-radius: 4px; overflow: hidden; border: 1px solid var(--color-outline-variant); }
+  .segmented button {
+    font-family: 'JetBrains Mono', monospace; font-size: 13px; padding: 8px 12px;
+    border: none; background: var(--color-surface); color: var(--color-on-surface);
+    cursor: pointer; border-right: 1px solid var(--color-outline-variant);
+  }
+  .segmented button:last-child { border-right: none; }
+  .segmented button[aria-pressed="true"] {
+    background: var(--color-primary); color: var(--color-on-primary); font-weight: 600;
+  }
+  select.select {
+    font-family: Inter, sans-serif; font-size: 16px; padding: 8px 12px;
+    border-radius: 4px; border: 1px solid var(--color-outline-variant);
+    background: var(--color-surface); color: var(--color-on-surface);
+  }
+
+  .hand-strip { position: relative; height: 22px; margin-bottom: 4px; }
+  .bracket {
+    position: absolute; top: 8px; height: 3px; border-radius: 2px;
+    display: flex; align-items: center;
+  }
+  .bracket .tag {
+    position: absolute; left: 0; top: -18px; font-family: 'JetBrains Mono', monospace;
+    font-size: 11px; font-weight: 700; padding: 1px 6px; border-radius: 4px;
+  }
+  .bracket.left { background: var(--color-primary); }
+  .bracket.left .tag { background: var(--color-primary); color: var(--color-on-primary); }
+  .bracket.right { background: var(--color-secondary); }
+  .bracket.right .tag { background: var(--color-secondary); color: var(--color-on-secondary); }
+
+  .keyboard-band {
+    background: var(--color-surface); border-top: 1px solid var(--color-outline-variant);
+    border-bottom: 1px solid var(--color-outline-variant);
+    padding: 16px 0 0 0; margin-bottom: 20px; overflow-x: auto;
+  }
+  .keys { position: relative; height: 180px; }
+  .key.white {
+    position: absolute; top: 0; height: 180px; width: 34px;
+    background: var(--color-key-white); border: 1px solid var(--color-outline-variant);
+    border-radius: 0 0 6px 6px; z-index: 1;
+  }
+  .key.black {
+    position: absolute; top: 0; height: 108px; width: 22.67px;
+    background: var(--color-key-black); border-radius: 0 0 3px 3px; z-index: 2;
+  }
+  .marker { position: absolute; left: 50%; transform: translateX(-50%); }
+  .marker.root {
+    width: 18px; height: 18px; bottom: 14px; background: var(--color-tertiary);
+    border: 2px solid #4E3D00; transform: translateX(-50%) rotate(45deg);
+  }
+  .marker.tone {
+    width: 12px; height: 12px; border-radius: 50%; bottom: 16px; background: var(--color-secondary);
+  }
+  .bass-bar {
+    position: absolute; left: 2px; right: 2px; bottom: 0; height: 4px;
+    background: var(--color-primary); border-radius: 2px 2px 0 0;
+  }
+
+  .notes-panel {
+    background: var(--color-surface); border: 1px solid var(--color-outline-variant);
+    border-radius: 12px; padding: 20px; margin-bottom: 20px; max-width: 420px;
+  }
+  .notes-panel h2 { font-family: 'JetBrains Mono', monospace; font-size: 13px; letter-spacing: 0.05em; text-transform: uppercase; color: var(--color-on-surface-variant); margin: 0 0 10px; }
+  .notes-panel p { font-family: 'JetBrains Mono', monospace; font-size: 20px; margin: 4px 0; }
+
+  .secondary-row { display: flex; flex-wrap: wrap; gap: 16px; background: var(--color-surface-low); padding: 14px 16px; border-radius: 8px; margin-bottom: 20px; font-size: 14px; color: var(--color-on-surface-variant); }
+
+  .playback-bar { display: flex; align-items: center; gap: 12px; margin-bottom: 28px; }
+  .btn { font-family: 'JetBrains Mono', monospace; font-size: 13px; padding: 10px 16px; border-radius: 4px; border: 1px solid var(--color-outline-variant); background: transparent; color: var(--color-on-surface); cursor: pointer; }
+  .btn.primary { background: var(--color-primary); color: var(--color-on-primary); border: none; }
+  .status { font-family: 'JetBrains Mono', monospace; font-size: 12px; text-transform: uppercase; color: var(--color-on-surface-variant); }
+
+  .tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 10px; }
+  .tile { background: var(--color-surface-low); border: 1px solid var(--color-outline-variant); border-radius: 4px; padding: 12px; min-height: 88px; }
+  .tile .sym { font-family: 'JetBrains Mono', monospace; font-size: 20px; font-weight: 600; }
+  .tile .label { font-size: 14px; color: var(--color-on-surface-variant); }
+  .group-header { font-family: 'JetBrains Mono', monospace; font-size: 13px; text-transform: uppercase; color: var(--color-on-surface-variant); margin: 16px 0 8px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <h1 class="headline">Piano Chord Explorer</h1>
+    <div class="toggle">
+      <span>Light</span>
+      <button class="switch" onclick="document.documentElement.setAttribute('data-theme', document.documentElement.getAttribute('data-theme')==='light'?'dark':'light')" aria-label="Toggle theme"></button>
+    </div>
+  </header>
+
+  <div class="chord-title-row">
+    <h2 class="chord-title headline">C7</h2>
+    <span class="slash-label mono">C7/E</span>
+    <span class="inversion-name">1st inversion</span>
+  </div>
+
+  <div class="dominant-row">
+    <div class="field">
+      <label>Root</label>
+      <div class="segmented" role="radiogroup" aria-label="Root note">
+        <button aria-pressed="true">C</button><button aria-pressed="false">C♯</button><button aria-pressed="false">D</button><button aria-pressed="false">E</button><button aria-pressed="false">F</button>
+      </div>
+    </div>
+    <div class="field">
+      <label>Quality</label>
+      <select class="select"><option selected>Dominant seventh</option><option>Major</option><option>Minor</option></select>
+    </div>
+    <div class="field">
+      <label>Inversion</label>
+      <div class="segmented" role="radiogroup" aria-label="Inversion">
+        <button aria-pressed="false">Root</button><button aria-pressed="true">1st</button><button aria-pressed="false">2nd</button><button aria-pressed="false">3rd</button>
+      </div>
+    </div>
+    <div class="field">
+      <label>Voicing</label>
+      <div class="segmented" role="radiogroup" aria-label="Voicing">
+        <button aria-pressed="false">Close</button><button aria-pressed="false">Open</button><button aria-pressed="true">Left/Right hands</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="keyboard-band">
+    <div class="hand-strip">
+      <div class="bracket left" style="left:0px; width:34px;"><span class="tag">L</span></div>
+      <div class="bracket right" style="left:306px; width:136px;"><span class="tag">R</span></div>
+    </div>
+    <div class="keys" id="keys"></div>
+  </div>
+
+  <div class="notes-panel">
+    <h2>Notes</h2>
+    <p>Chord: E · G · B♭ · C</p>
+  </div>
+
+  <div class="secondary-row">
+    <span>Scale follows: Chord root</span>
+    <span>View: Chord</span>
+    <span>Octave range: E2–B4 (auto-extended)</span>
+    <span>Genre: Any</span>
+  </div>
+
+  <div class="playback-bar">
+    <button class="btn primary">▶ Play chord</button>
+    <button class="btn">Arpeggiate</button>
+    <button class="btn">Play scale</button>
+    <span class="status">Ready</span>
+  </div>
+
+  <div class="group-header">Explore C chord types — core</div>
+  <div class="tiles">
+    <div class="tile"><div class="sym mono">C</div><div class="label">The most common chord in music</div></div>
+    <div class="tile"><div class="sym mono">Cm</div><div class="label">Common in pop and rock</div></div>
+    <div class="tile"><div class="sym mono">Cdim</div><div class="label">A jazz and film-music tension chord</div></div>
+    <div class="tile"><div class="sym mono">Caug</div><div class="label">Used for colour and suspense</div></div>
+  </div>
+
+</div>
+
+<script>
+  // Renders MIDI 40 (E2) → 71 (B4): the default 2-octave range, auto-extended
+  // down to include this Left/Right voicing's bass note (E2), per tech-spec
+  // §Data model → DisplayRange.
+  var WHITE_PC = [0, 2, 4, 5, 7, 9, 11];
+  var LOW = 40, HIGH = 71;
+  var rootPc = 0;              // C
+  var chordTonePcs = [0, 4, 7, 10]; // C7: C, E, G, B♭
+  var bassMidi = 40;           // E2 — the voiced bass note (dropped an octave for Left hand)
+  var whiteW = 34, blackW = 22.67;
+
+  var container = document.getElementById('keys');
+  var whiteX = 0;
+  var pcToWhiteIndex = {0:0,2:1,4:2,5:3,7:4,9:5,11:6};
+
+  for (var midi = LOW; midi <= HIGH; midi++) {
+    var pc = ((midi % 12) + 12) % 12;
+    var isWhite = WHITE_PC.indexOf(pc) !== -1;
+    var el = document.createElement('div');
+    el.className = 'key ' + (isWhite ? 'white' : 'black');
+
+    if (isWhite) {
+      el.style.left = whiteX + 'px';
+      el.style.width = whiteW + 'px';
+    } else {
+      // centred on the seam with the previous white key
+      el.style.left = (whiteX - blackW / 2) + 'px';
+      el.style.width = blackW + 'px';
+    }
+
+    if (pc === rootPc) {
+      var d = document.createElement('div');
+      d.className = 'marker root';
+      el.appendChild(d);
+    } else if (chordTonePcs.indexOf(pc) !== -1) {
+      var t = document.createElement('div');
+      t.className = 'marker tone';
+      el.appendChild(t);
+    }
+
+    if (midi === bassMidi) {
+      var b = document.createElement('div');
+      b.className = 'bass-bar';
+      el.appendChild(b);
+    }
+
+    container.appendChild(el);
+    if (isWhite) whiteX += whiteW;
+  }
+  container.style.width = whiteX + 'px';
+</script>
+
+</body>
+</html>

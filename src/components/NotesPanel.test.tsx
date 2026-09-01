@@ -16,6 +16,8 @@ function resetStore() {
       scaleMode: 'chord-root',
       viewMode: 'both',
       genre: 'Any',
+      inversion: 0,
+      voicingType: 'close',
     },
     octaveStart: 48,
     octaveEnd: 71,
@@ -79,10 +81,19 @@ describe('NotesPanel', () => {
     expect(rowText('Scale:')).toBe('C · D♯ · E · G · G♯ · B')
   })
 
-  it('shows the scale row in scale-only view too, since Chord is always shown', () => {
+  it('shows only the scale notes when View mode is scale-only, not the chord notes (E4a, phase-4 fix)', () => {
     act(() => useSelectionStore.getState().setViewMode('scale'))
     renderPanel()
-    expect(rowText('Chord:')).toBe('C · E · G')
+    expect(rowText('Chord:')).toBeUndefined()
     expect(rowText('Scale:')).toBe('C · D · E · F · G · A · B')
+  })
+
+  it('orders the chord notes bass to treble by the selected inversion (S2b+2, phase-4 correction)', () => {
+    act(() => {
+      useSelectionStore.getState().setQuality('7') // C7: C, E, G, Bb
+      useSelectionStore.getState().setInversion(1) // 1st inversion: E, G, Bb, C
+    })
+    renderPanel()
+    expect(rowText('Chord:')).toBe('E · G · A♯ · C')
   })
 })

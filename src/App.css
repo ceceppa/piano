@@ -39,6 +39,17 @@
   }
 }
 
+/* Slash-chord label + inversion name (design-brief §Header slash-chord label, phase-4). */
+.chord-title .slash-label {
+  font-family: var(--font-mono);
+  font: var(--text-notation-lg);
+}
+
+.chord-title .inversion-name {
+  font: var(--text-body-sm);
+  color: var(--color-on-surface-variant);
+}
+
 .explore {
   flex: 1;
   display: flex;

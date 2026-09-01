@@ -4,13 +4,17 @@ import {
   chordName,
   chordScaleType,
   chordTones,
+  inversionName,
   isRecommendedForGenre,
   noteName,
   QUALITIES,
   rootPositionVoice,
   scaleLabel,
   scaleTones,
+  slashChordLabel,
+  validInversionCount,
   variationsFor,
+  voice,
   VOICE_BAND_HIGH,
   VOICE_BAND_LOW,
 } from './index'
@@ -206,5 +210,72 @@ describe('rootPositionVoice', () => {
 
   it('preserves octave information (add9 spans 14 semitones)', () => {
     expect(rootPositionVoice({ root: C, quality: 'add9' })).toEqual([48, 52, 55, 62])
+  })
+})
+
+describe('validInversionCount', () => {
+  it('is root position plus every inversion a chord has', () => {
+    expect(validInversionCount({ root: C, quality: 'major' })).toBe(3)
+    expect(validInversionCount({ root: C, quality: '7' })).toBe(4)
+    expect(validInversionCount({ root: C, quality: '9' })).toBe(5)
+  })
+})
+
+describe('inversionName', () => {
+  it('names root position and each inversion', () => {
+    expect(inversionName(0)).toBe('Root position')
+    expect(inversionName(1)).toBe('1st inversion')
+    expect(inversionName(2)).toBe('2nd inversion')
+    expect(inversionName(3)).toBe('3rd inversion')
+  })
+})
+
+describe('slashChordLabel', () => {
+  it('is null at root position', () => {
+    expect(slashChordLabel({ root: C, quality: '7' }, 0)).toBeNull()
+  })
+
+  it('names the chord over its inverted bass note', () => {
+    expect(slashChordLabel({ root: C, quality: '7' }, 1)).toBe('C7/E')
+    expect(slashChordLabel({ root: A, quality: 'major' }, 1)).toBe('A/C♯')
+    expect(slashChordLabel({ root: A, quality: 'major' }, 2)).toBe('A/E')
+  })
+})
+
+describe('voice', () => {
+  it('close voicing at root position matches rootPositionVoice', () => {
+    expect(voice({ root: C, quality: 'maj7' }, 0, 'close').map((n) => n.midi)).toEqual([48, 52, 55, 59])
+  })
+
+  it('rotates the bass for each inversion, staying ascending', () => {
+    const chord = { root: C, quality: '7' as const }
+    expect(voice(chord, 0).map((n) => n.midi)).toEqual([48, 52, 55, 58])
+    expect(voice(chord, 1).map((n) => n.midi)).toEqual([52, 55, 58, 60])
+    expect(voice(chord, 2).map((n) => n.midi)).toEqual([55, 58, 60, 64])
+    expect(voice(chord, 3).map((n) => n.midi)).toEqual([58, 60, 64, 67])
+  })
+
+  it('clamps an inversion beyond the chord’s valid range', () => {
+    const chord = { root: C, quality: 'major' as const }
+    expect(voice(chord, 5)).toEqual(voice(chord, 2))
+  })
+
+  it('open voicing spreads every other note up an octave', () => {
+    expect(voice({ root: C, quality: 'major' }, 0, 'open').map((n) => n.midi)).toEqual([48, 55, 64])
+  })
+
+  it('left/right-hand voicing drops the bass an octave and tags hands', () => {
+    const notes = voice({ root: C, quality: 'major' }, 0, 'leftRight')
+    expect(notes).toEqual([
+      { midi: 36, hand: 'left' },
+      { midi: 52, hand: 'right' },
+      { midi: 55, hand: 'right' },
+    ])
+  })
+
+  it('combines any voicing with any inversion', () => {
+    const notes = voice({ root: C, quality: '7' }, 2, 'leftRight')
+    expect(notes[0].hand).toBe('left')
+    expect(notes[0].midi).toBeLessThan(notes[1].midi)
   })
 })

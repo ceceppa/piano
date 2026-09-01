@@ -31,6 +31,8 @@ function resetStore() {
       scaleMode: 'chord-root',
       viewMode: 'both',
       genre: 'Any',
+      inversion: 0,
+      voicingType: 'close',
     },
     octaveStart: 48,
     octaveEnd: 71,
@@ -79,6 +81,27 @@ describe('PlaybackBar', () => {
     renderBar()
     await act(async () => clickButton('Play chord'))
     expect(audioEngine.playChord).toHaveBeenCalledWith(rootPositionVoice({ root: 9, quality: 'm7' }))
+  })
+
+  it('plays the exact selected inversion, not the root-position chord (E2c, phase-4)', async () => {
+    act(() => {
+      useSelectionStore.getState().setQuality('7')
+      useSelectionStore.getState().setInversion(1) // C7/E
+    })
+    renderBar()
+    await act(async () => clickButton('Play chord'))
+    expect(audioEngine.playChord).toHaveBeenCalledWith([52, 55, 58, 60])
+    expect(audioEngine.playChord).not.toHaveBeenCalledWith(rootPositionVoice({ root: 0, quality: '7' }))
+  })
+
+  it('plays the exact selected voicing together with the selected inversion (E3c, phase-4)', async () => {
+    act(() => {
+      useSelectionStore.getState().setInversion(0)
+      useSelectionStore.getState().setVoicingType('leftRight')
+    })
+    renderBar()
+    await act(async () => clickButton('Play chord'))
+    expect(audioEngine.playChord).toHaveBeenCalledWith([36, 52, 55])
   })
 
   it('calls playArpeggio with the same voice set', async () => {

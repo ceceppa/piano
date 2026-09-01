@@ -30,6 +30,8 @@ function resetStore() {
       scaleMode: 'chord-root',
       viewMode: 'both',
       genre: 'Any',
+      inversion: 0,
+      voicingType: 'close',
     },
     octaveStart: 48,
     octaveEnd: 71,
@@ -73,31 +75,30 @@ describe('Keyboard visualisation', () => {
     expect(states[49]).toBe('plain') // C♯
   })
 
-  it('in chord mode highlights only chord tones plus the root marker', () => {
+  it('in chord mode highlights only the current voicing’s exact notes, once (S2b+1, phase-4 correction)', () => {
     act(() => useSelectionStore.getState().setViewMode('chord'))
     renderKeyboard()
     const states = keyStates()
-    const chordPcs = new Set([0, 4, 7]) // C, E, G
-    const roots = new Set([48, 60])
+    // C major close, root position: C3/E3/G3 (48/52/55) — the only voiced instance.
     for (const [midi, state] of Object.entries(states)) {
       const m = Number(midi)
-      if (roots.has(m)) expect(state).toBe('root')
-      else if (chordPcs.has(m % 12)) expect(state).toBe('chord-tone')
-      else expect(state).toBe('plain')
+      if (m === 48) expect(state).toBe('root')
+      else if (m === 52 || m === 55) expect(state).toBe('chord-tone')
+      else expect(state).toBe('plain') // includes 60 — the pitch-class repeat, not repeated
     }
   })
 
-  it('in scale mode highlights the scale set (no chord-only tones)', () => {
+  it('in scale mode highlights the scale set once, starting at the scale’s first visible root (E4b, phase-4)', () => {
     act(() => useSelectionStore.getState().setViewMode('scale'))
     renderKeyboard()
     const states = keyStates()
     const scalePcs = new Set([0, 2, 4, 5, 7, 9, 11]) // C major scale
-    const roots = new Set([48, 60])
     for (const [midi, state] of Object.entries(states)) {
       const m = Number(midi)
-      if (roots.has(m)) expect(state).toBe('root')
-      else if (scalePcs.has(m % 12)) expect(state).toBe('scale-note')
-      else expect(state).toBe('plain')
+      // No chord/root marker in scale mode (S4a+1, phase-4 correction) — C3 (48)
+      // reads as a scale note like any other, not the chord root.
+      if (m >= 48 && m <= 59 && scalePcs.has(m % 12)) expect(state).toBe('scale-note')
+      else expect(state).toBe('plain') // second octave (60-71): not repeated
     }
   })
 
@@ -113,11 +114,14 @@ describe('Keyboard visualisation', () => {
     expect(states[60]).toBe('chord-tone') // C
     expect(states[64]).toBe('chord-tone') // E
     expect(states[67]).toBe('chord-tone') // G
-    expect(states[62]).toBe('scale-note') // D
+    expect(states[62]).toBe('scale-note') // D, within the A3-G#4 scale band
     // A m7's chord-root scale is A natural minor (tech-spec §Chord-scale mapping), not
-    // A major — C♯ (49) is outside it; F3 (53) is the natural-minor-only tone instead.
+    // A major — C♯ (49) is outside it either way.
     expect(states[49]).toBe('plain')
-    expect(states[53]).toBe('scale-note') // F3 (A natural minor)
+    // F3 (53) is below the scale band that starts at the first visible A (57);
+    // only its higher octave, F4 (65), is marked (E4b, phase-4).
+    expect(states[53]).toBe('plain')
+    expect(states[65]).toBe('scale-note') // F4 (A natural minor)
   })
 
   it('re-lays out keys when the octave range changes', () => {
@@ -195,5 +199,125 @@ describe('Keyboard visualisation', () => {
       document.body.appendChild(container)
       root = createRoot(container)
     }
+  })
+})
+
+describe('Keyboard default range covers voiced notes (phase-4 correction, S3a+1)', () => {
+  it('shows a chord tone that falls beyond the old 2-octave default (B add9)', () => {
+    act(() =>
+      useSelectionStore.setState((state) => ({
+        selection: { ...state.selection, root: 11, quality: 'add9' },
+        octaveStart: 48,
+        octaveEnd: 83,
+      })),
+    )
+    renderKeyboard()
+    // B add9 close voicing includes C♯ at midi 73 — outside the old 48–71 default,
+    // inside the new 48–83 (3-octave) default.
+    expect(container.querySelector<HTMLElement>('[data-midi="73"]')?.dataset.state).toBe('chord-tone')
+  })
+})
+
+describe('Keyboard scale display fixes (phase-4)', () => {
+  it('marks a scale note only once per octave, from the first visible occurrence of the scale root', () => {
+    act(() => useSelectionStore.getState().setViewMode('scale'))
+    renderKeyboard()
+    // C major scale, default C3–B4 range: the first visible root is C3 (48).
+    expect(container.querySelector<HTMLElement>('[data-midi="50"]')?.dataset.state).toBe('scale-note') // D3
+    expect(container.querySelector<HTMLElement>('[data-midi="62"]')?.dataset.state).toBe('plain') // D4 — not repeated
+  })
+})
+
+describe('Keyboard inversions and voicings (phase-4)', () => {
+  it('marks the bass note, which coincides with the root at root position', () => {
+    renderKeyboard()
+    const rootKey = container.querySelector<HTMLElement>('[data-midi="48"]')!
+    expect(rootKey.dataset.bass).toBe('true')
+    expect(rootKey.querySelector('.marker-root')).not.toBeNull()
+    expect(rootKey.querySelector('.marker-bass')).not.toBeNull()
+  })
+
+  it('moves the bass marker to the inverted bass note, off the root', () => {
+    act(() => {
+      useSelectionStore.getState().setQuality('7')
+      useSelectionStore.getState().setInversion(1) // C7/E: bass = E3 (52)
+    })
+    renderKeyboard()
+    expect(container.querySelector<HTMLElement>('[data-midi="52"]')?.dataset.bass).toBe('true')
+    expect(container.querySelector<HTMLElement>('[data-midi="48"]')?.dataset.bass).toBeUndefined()
+  })
+
+  it('marks the exact voiced instances, so open visibly differs from close (E3a)', () => {
+    renderKeyboard()
+    const voicedMidis = () =>
+      [...container.querySelectorAll<HTMLElement>('[data-voiced]')].map((el) => Number(el.dataset.midi)).sort((a, b) => a - b)
+    expect(voicedMidis()).toEqual([48, 52, 55]) // C major close: C3, E3, G3
+    act(() => useSelectionStore.getState().setVoicingType('open'))
+    expect(voicedMidis()).toEqual([48, 55, 64]) // open: C3, G3, E4
+  })
+
+  it('shows no hand-grouping strip for close or open voicing', () => {
+    act(() => useSelectionStore.getState().setVoicingType('open'))
+    renderKeyboard()
+    expect(container.querySelector('[aria-label="Hand grouping"]')).toBeNull()
+  })
+
+  it('shows a labelled hand-grouping strip and tags keys by hand for left/right voicing', () => {
+    act(() => useSelectionStore.getState().setVoicingType('leftRight'))
+    renderKeyboard()
+    const strip = container.querySelector('[aria-label="Hand grouping"]')
+    expect(strip).not.toBeNull()
+    expect(strip?.querySelector('.hand-bracket-left .hand-tag')?.textContent).toBe('L')
+    expect(strip?.querySelector('.hand-bracket-right .hand-tag')?.textContent).toBe('R')
+    // C major, left/right: left hand drops the bass an octave (C2 = 36), right keeps E3/G3.
+    expect(container.querySelector<HTMLElement>('[data-midi="36"]')?.dataset.hand).toBe('left')
+    expect(container.querySelector<HTMLElement>('[data-midi="52"]')?.dataset.hand).toBe('right')
+    expect(container.querySelector<HTMLElement>('[data-midi="55"]')?.dataset.hand).toBe('right')
+  })
+
+  it('extends the visible range downward to include a left/right voicing’s dropped bass note', () => {
+    renderKeyboard()
+    expect(container.querySelector('[data-midi="36"]')).toBeNull() // below the default 48 start
+    act(() => useSelectionStore.getState().setVoicingType('leftRight'))
+    expect(container.querySelector('[data-midi="36"]')).not.toBeNull()
+    expect(container.querySelector('[data-midi="71"]')).not.toBeNull() // endMidi untouched
+  })
+
+  it('renders any inversion combined with any voicing without error, marking whichever note is now the bass', () => {
+    act(() => {
+      useSelectionStore.getState().setQuality('7')
+      useSelectionStore.getState().setInversion(2)
+      useSelectionStore.getState().setVoicingType('open')
+    })
+    renderKeyboard()
+    // C7 2nd inversion, open: [55, 60, 70, 76] (G,C,B♭+12,E+12) — bass stays the
+    // inversion's own bass note (55, G) since 'open' never touches the bass.
+    expect(container.querySelector<HTMLElement>('[data-midi="55"]')?.dataset.bass).toBe('true')
+  })
+})
+
+describe('No chord elements in scale view (phase-4 correction, S4a+1)', () => {
+  it('hides the bass marker, the voiced-note outline, and the hand-grouping strip when View mode is scale', () => {
+    act(() => {
+      useSelectionStore.getState().setQuality('7')
+      useSelectionStore.getState().setInversion(1)
+      useSelectionStore.getState().setVoicingType('leftRight')
+      useSelectionStore.getState().setViewMode('scale')
+    })
+    renderKeyboard()
+    expect(container.querySelector('[aria-label="Hand grouping"]')).toBeNull()
+    expect(container.querySelectorAll('[data-bass]')).toHaveLength(0)
+    expect(container.querySelectorAll('[data-voiced]')).toHaveLength(0)
+    expect(container.querySelector('.marker-bass')).toBeNull()
+  })
+
+  it('restores chord elements when View mode leaves scale', () => {
+    act(() => {
+      useSelectionStore.getState().setViewMode('scale')
+    })
+    renderKeyboard()
+    expect(container.querySelector<HTMLElement>('[data-midi="48"]')?.dataset.bass).toBeUndefined()
+    act(() => useSelectionStore.getState().setViewMode('both'))
+    expect(container.querySelector<HTMLElement>('[data-midi="48"]')?.dataset.bass).toBe('true')
   })
 })

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { chordScaleType, rootPositionVoice, scaleTones } from '../musicCore'
+import { chordScaleType, scaleTones, voice } from '../musicCore'
 import { useSelectionStore } from '../store/useSelectionStore'
 import * as audioEngine from '../audioEngine'
 import Button from './shared/Button'
@@ -14,8 +14,8 @@ export default function PlaybackBar() {
     return () => audioEngine.setPlaybackListener(null)
   }, [])
 
-  const { root, quality, key, scaleMode } = selection
-  const voice = rootPositionVoice({ root, quality })
+  const { root, quality, key, scaleMode, inversion, voicingType } = selection
+  const voiced = voice({ root, quality }, inversion, voicingType).map((n) => n.midi)
   const scaleRoot = scaleMode === 'key' ? key.root : root
   const scaleType = scaleMode === 'key' ? key.scaleType : chordScaleType(quality)
   const scale = scaleTones(scaleRoot, scaleType).map((pc) => 48 + pc)
@@ -30,16 +30,16 @@ export default function PlaybackBar() {
         variant="primary"
         round
         aria-label="Play chord"
-        onClick={() => run(() => audioEngine.playChord(voice))}
+        onClick={() => run(() => audioEngine.playChord(voiced))}
       >
         <svg className="play-icon" viewBox="0 0 24 24" aria-hidden="true">
           <path d="M8 5v14l11-7z" />
         </svg>
       </Button>
-      <Button variant="ghost" onClick={() => run(() => audioEngine.playChord(voice))}>
+      <Button variant="ghost" onClick={() => run(() => audioEngine.playChord(voiced))}>
         Play chord
       </Button>
-      <Button variant="ghost" onClick={() => run(() => audioEngine.playArpeggio(voice))}>
+      <Button variant="ghost" onClick={() => run(() => audioEngine.playArpeggio(voiced))}>
         Arpeggiate
       </Button>
       <Button variant="ghost" onClick={() => run(() => audioEngine.playScale(scale))}>

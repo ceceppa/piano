@@ -1,5 +1,5 @@
 import { useRef } from 'react'
-import { chordScaleType, chordTones, noteName, scaleTones } from '../musicCore'
+import { chordScaleType, noteName, scaleTones, voice } from '../musicCore'
 import { useSelectionStore } from '../store/useSelectionStore'
 import * as audioEngine from '../audioEngine'
 import './Keyboard.css'
@@ -28,15 +28,18 @@ function keyRange(startMidi: number, endMidi: number): number[] {
 }
 
 function classify(
-  pc: number,
+  midi: number,
   root: number,
-  chordSet: Set<number>,
+  voicedMidis: Set<number>,
   scaleSet: Set<number>,
   viewMode: 'chord' | 'scale' | 'both',
+  inScaleBand: (midi: number) => boolean,
 ): KeyState {
-  if (pc === root) return 'root'
-  if (viewMode !== 'scale' && chordSet.has(pc)) return 'chord-tone'
-  if (viewMode !== 'chord' && scaleSet.has(pc)) return 'scale-note'
+  const pc = midi % 12
+  // Root/chord-tone marks only the current voicing's exact notes, once
+  // (S2b+1, phase-4 correction) — not every octave repeat of the pitch class.
+  if (viewMode !== 'scale' && voicedMidis.has(midi)) return pc === root ? 'root' : 'chord-tone'
+  if (viewMode !== 'chord' && scaleSet.has(pc) && inScaleBand(midi)) return 'scale-note'
   return 'plain'
 }
 
@@ -47,23 +50,49 @@ export default function Keyboard({ showNoteNames = false }: KeyboardProps) {
 
   const held = useRef<Set<number>>(new Set())
 
-  const { root, quality, key, scaleMode, viewMode } = selection
-  const chordSet = new Set(chordTones(root, quality))
+  const { root, quality, key, scaleMode, viewMode, inversion, voicingType } = selection
   const scaleRoot = scaleMode === 'key' ? key.root : root
   const scaleType = scaleMode === 'key' ? key.scaleType : chordScaleType(quality)
   const scaleSet = new Set(scaleTones(scaleRoot, scaleType))
 
-  const midis = keyRange(storeOctaveStart, storeOctaveEnd)
+  // tech-spec §Data model → DisplayRange: the effective low bound relaxes to
+  // include the current voicing's bass note, computed fresh — never stored.
+  const voicedNotes = voice({ root, quality }, inversion, voicingType)
+  const bassMidi = voicedNotes[0]?.midi
+  const handByMidi = new Map(voicedNotes.filter((n) => n.hand).map((n) => [n.midi, n.hand]))
+  const voicedMidis = new Set(voicedNotes.map((n) => n.midi))
+  const effectiveStart = bassMidi === undefined ? storeOctaveStart : Math.min(storeOctaveStart, bassMidi)
+
+  const midis = keyRange(effectiveStart, storeOctaveEnd)
+
+  // Scale-tone markers show once, starting from the scale's first visible
+  // root note, instead of repeating in every octave (phase-3 review).
+  const scaleBandStart = midis.find((m) => m % 12 === scaleRoot) ?? effectiveStart
+  const inScaleBand = (midi: number) => midi >= scaleBandStart && midi < scaleBandStart + 12
+
   const whiteMidis = midis.filter((m) => !isBlack(m))
   const blackMidis = midis.filter(isBlack)
   const whiteCount = whiteMidis.length
 
-  const blackLeft = (midi: number): string => {
+  const percentForMidi = (midi: number): number => {
+    if (!isBlack(midi)) return (whiteMidis.indexOf(midi) / whiteCount) * 100
     const idx = whiteMidis.findIndex((m) => m > midi) - 1
-    return `${((idx + 1) / whiteCount) * 100}%`
+    return ((idx + 1) / whiteCount) * 100
   }
 
+  const blackLeft = (midi: number): string => `${percentForMidi(midi)}%`
+
   const blackWidth = (): string => `${(100 / whiteCount) * (2 / 3)}%`
+
+  const keyWidthPercent = 100 / whiteCount
+  const handBracket = (hand: 'left' | 'right'): { left: string; width: string } | null => {
+    const midisForHand = voicedNotes.filter((n) => n.hand === hand).map((n) => n.midi)
+    if (midisForHand.length === 0) return null
+    const positions = midisForHand.map(percentForMidi)
+    const left = Math.min(...positions)
+    const right = Math.max(...positions) + keyWidthPercent
+    return { left: `${left}%`, width: `${right - left}%` }
+  }
 
   const playNote = (midi: number) => {
     if (held.current.has(midi)) return
@@ -111,19 +140,48 @@ export default function Keyboard({ showNoteNames = false }: KeyboardProps) {
     return null
   }
 
+  // No chord-only element in scale view (S4a+1, phase-4 correction): the bass
+  // marker, the voiced-note outline, and the hand-grouping strip all follow.
+  const showChordElements = viewMode !== 'scale'
+
+  const bassBar = (midi: number) =>
+    showChordElements && midi === bassMidi ? (
+      <span className="key-marker marker-bass" aria-label={`${midiLabel(midi)} is the bass note`} />
+    ) : null
+
+  const leftBracket = handBracket('left')
+  const rightBracket = handBracket('right')
+
   return (
     <div className="keyboard-wrap">
-      <div className="keyboard" role="group" aria-label={`Piano keyboard ${storeOctaveStart}–${storeOctaveEnd}`}>
+      {voicingType === 'leftRight' && showChordElements && (
+        <div className="hand-strip" role="group" aria-label="Hand grouping">
+          {leftBracket && (
+            <div className="hand-bracket hand-bracket-left" style={leftBracket}>
+              <span className="hand-tag">L</span>
+            </div>
+          )}
+          {rightBracket && (
+            <div className="hand-bracket hand-bracket-right" style={rightBracket}>
+              <span className="hand-tag">R</span>
+            </div>
+          )}
+        </div>
+      )}
+      <div className="keyboard" role="group" aria-label={`Piano keyboard ${effectiveStart}–${storeOctaveEnd}`}>
         <div className="keyboard-whites">
           {whiteMidis.map((midi) => {
-            const state: KeyState = classify(midi % 12, root, chordSet, scaleSet, viewMode)
+            const state: KeyState = classify(midi, root, voicedMidis, scaleSet, viewMode, inScaleBand)
             return (
               <button
                 key={midi}
                 type="button"
-                className={`key key-white key-${state}`}
+                className={`key key-white key-${state}${showChordElements && midi === bassMidi ? ' key-bass' : ''}${showChordElements && voicedMidis.has(midi) ? ' key-voiced' : ''}`}
                 data-midi={midi}
                 data-state={state}
+                data-bass={(showChordElements && midi === bassMidi) || undefined}
+                data-voiced={(showChordElements && voicedMidis.has(midi)) || undefined}
+                data-hand={handByMidi.get(midi)}
                 aria-label={midiLabel(midi)}
                 onPointerDown={keyHandlers.onPointerDown(midi)}
                 onPointerUp={keyHandlers.onPointerUp(midi)}
@@ -136,20 +194,24 @@ export default function Keyboard({ showNoteNames = false }: KeyboardProps) {
                   {showNoteNames ? midiLabel(midi) : ''}
                 </span>
                 {marker(midi, state)}
+                {bassBar(midi)}
               </button>
             )
           })}
         </div>
         <div className="keyboard-blacks">
           {blackMidis.map((midi) => {
-            const state: KeyState = classify(midi % 12, root, chordSet, scaleSet, viewMode)
+            const state: KeyState = classify(midi, root, voicedMidis, scaleSet, viewMode, inScaleBand)
             return (
               <button
                 key={midi}
                 type="button"
-                className={`key key-black key-${state}`}
+                className={`key key-black key-${state}${showChordElements && midi === bassMidi ? ' key-bass' : ''}${showChordElements && voicedMidis.has(midi) ? ' key-voiced' : ''}`}
                 data-midi={midi}
                 data-state={state}
+                data-bass={(showChordElements && midi === bassMidi) || undefined}
+                data-voiced={(showChordElements && voicedMidis.has(midi)) || undefined}
+                data-hand={handByMidi.get(midi)}
                 aria-label={midiLabel(midi)}
                 style={{ left: blackLeft(midi), width: blackWidth() }}
                 onPointerDown={keyHandlers.onPointerDown(midi)}
@@ -163,6 +225,7 @@ export default function Keyboard({ showNoteNames = false }: KeyboardProps) {
                   {showNoteNames ? midiLabel(midi) : ''}
                 </span>
                 {marker(midi, state)}
+                {bassBar(midi)}
               </button>
             )
           })}
