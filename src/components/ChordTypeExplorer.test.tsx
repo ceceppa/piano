@@ -26,10 +26,8 @@ function resetStore() {
     selection: {
       root: 9, // A
       quality: 'major',
-      key: { root: 0, scaleType: 'major' },
-      scaleMode: 'chord-root',
+      scaleType: 'major',
       viewMode: 'both',
-      genre: 'Any',
       inversion: 0,
       voicingType: 'close',
     },
@@ -63,11 +61,11 @@ function renderExplorerWithKeyboard() {
 }
 
 function tiles(): HTMLButtonElement[] {
-  return [...container.querySelectorAll<HTMLButtonElement>('.chord-tile')]
+  return [...container.querySelectorAll<HTMLButtonElement>('.explore-tile')]
 }
 
 function groupTitles(): string[] {
-  return [...container.querySelectorAll('.chord-group-title')].map((el) => el.textContent ?? '')
+  return [...container.querySelectorAll('.explore-group-title')].map((el) => el.textContent ?? '')
 }
 
 describe('ChordTypeExplorer', () => {
@@ -76,20 +74,20 @@ describe('ChordTypeExplorer', () => {
     expect(container.querySelector('.chord-explore-title')?.textContent).toBe('Explore A chord types')
   })
 
-  it('groups every catalogue quality into Core / Colour / Sevenths & extensions, chord symbol dominant', () => {
+  it('groups every catalogue quality into Common / Colour / Sevenths & extensions, chord symbol dominant', () => {
     renderExplorerWithKeyboard()
-    expect(groupTitles()).toEqual(['Core', 'Colour', 'Sevenths & extensions'])
+    expect(groupTitles()).toEqual(['Common', 'Colour', 'Sevenths & extensions'])
 
-    const groups = [...container.querySelectorAll('.chord-group')]
+    const groups = [...container.querySelectorAll('.explore-group')]
     const symbolsIn = (group: Element) =>
-      [...group.querySelectorAll('.chord-tile-symbol')].map((el) => el.textContent)
+      [...group.querySelectorAll('.explore-tile-title')].map((el) => el.textContent)
 
     expect(symbolsIn(groups[0])).toEqual(['A', 'Am', 'Adim', 'Aaug'])
     expect(symbolsIn(groups[1])).toEqual(['Asus2', 'Asus4', 'A6', 'Aadd9'])
     expect(symbolsIn(groups[2])).toEqual(['A7', 'Amaj7', 'Am7', 'A9'])
 
     // Every catalogue id appears exactly once, across all groups.
-    const allSymbols = tiles().map((b) => b.querySelector('.chord-tile-symbol')?.textContent)
+    const allSymbols = tiles().map((b) => b.querySelector('.explore-tile-title')?.textContent)
     expect(allSymbols).toHaveLength(QUALITIES.length)
     for (const q of QUALITIES) {
       expect(allSymbols).toContain(chordName(9, q.id))
@@ -105,8 +103,8 @@ describe('ChordTypeExplorer', () => {
   it('marks the currently selected quality with a clear selected state', () => {
     renderExplorerWithKeyboard()
     const selected = tiles().find((b) => b.getAttribute('aria-pressed') === 'true')
-    expect(selected?.querySelector('.chord-tile-symbol')?.textContent).toBe('A')
-    expect(selected?.classList.contains('chord-tile-selected')).toBe(true)
+    expect(selected?.querySelector('.explore-tile-title')?.textContent).toBe('A')
+    expect(selected?.classList.contains('explore-tile-selected')).toBe(true)
   })
 
   it('tapping a tile updates the store quality and the keyboard highlights immediately, and moves the selected state', () => {
@@ -114,7 +112,7 @@ describe('ChordTypeExplorer', () => {
     const key = container.querySelector<HTMLElement>('[data-midi="57"]')! // A3
     expect(key.dataset.state).toBe('root')
 
-    const am7 = tiles().find((b) => b.querySelector('.chord-tile-symbol')?.textContent === 'Am7')
+    const am7 = tiles().find((b) => b.querySelector('.explore-tile-title')?.textContent === 'Am7')
     act(() => {
       am7!.click()
     })
@@ -124,12 +122,12 @@ describe('ChordTypeExplorer', () => {
     expect(cKey.dataset.state).toBe('chord-tone') // C is a chord tone of Am7
 
     const selected = tiles().find((b) => b.getAttribute('aria-pressed') === 'true')
-    expect(selected?.querySelector('.chord-tile-symbol')?.textContent).toBe('Am7')
+    expect(selected?.querySelector('.explore-tile-title')?.textContent).toBe('Am7')
   })
 
   it('plays the newly selected chord type without a separate confirmation step', async () => {
     renderExplorerWithKeyboard()
-    const a7 = tiles().find((b) => b.querySelector('.chord-tile-symbol')?.textContent === 'A7')
+    const a7 = tiles().find((b) => b.querySelector('.explore-tile-title')?.textContent === 'A7')
     await act(async () => {
       a7!.click()
     })
@@ -137,25 +135,37 @@ describe('ChordTypeExplorer', () => {
     expect(audioEngine.playChord).toHaveBeenCalledWith([57, 61, 64, 67])
   })
 
-  it('shows a non-colour Recommended cue only on tiles tagged for the selected genre, and never hides, removes, or reorders a tile', () => {
+  it('describes each chord in its own terms, with no genre guidance (S2a)', () => {
     renderExplorerWithKeyboard()
-    const before = tiles().map((b) => b.querySelector('.chord-tile-symbol')?.textContent)
-    act(() => {
-      useSelectionStore.getState().setGenre('Blues')
-    })
-    const after = tiles()
-    expect(after.map((b) => b.querySelector('.chord-tile-symbol')?.textContent)).toEqual(before)
-    const a7 = after.find((b) => b.querySelector('.chord-tile-symbol')?.textContent === 'A7')
-    expect(a7?.querySelector('.chord-tile-recommended')?.textContent).toBe('Recommended')
-    const amaj7 = after.find((b) => b.querySelector('.chord-tile-symbol')?.textContent === 'Amaj7')
-    expect(amaj7?.querySelector('.chord-tile-recommended')).toBeNull()
+    const labels = [...container.querySelectorAll('.explore-tile-label')].map((el) => el.textContent ?? '')
+    expect(labels).toHaveLength(QUALITIES.length)
+    expect(labels.every((l) => l.length > 0)).toBe(true)
+    for (const genre of ['jazz', 'blues', 'rock', 'pop', 'Recommended']) {
+      expect(labels.some((l) => l.toLowerCase().includes(genre.toLowerCase()))).toBe(false)
+    }
   })
 
-  it('clears the Recommended cue entirely when the genre is "Any"', () => {
+  it('shows every supported option at once — no filter row and no See-all control (S2a, E3b)', () => {
     renderExplorerWithKeyboard()
-    act(() => useSelectionStore.getState().setGenre('Blues'))
-    expect(container.querySelectorAll('.chord-tile-recommended').length).toBeGreaterThan(0)
-    act(() => useSelectionStore.getState().setGenre('Any'))
-    expect(container.querySelectorAll('.chord-tile-recommended').length).toBe(0)
+    expect(tiles()).toHaveLength(QUALITIES.length)
+    const text = container.querySelector('.chord-explore')?.textContent ?? ''
+    expect(text).not.toContain('See all')
+    expect(container.querySelector('.chord-explore select')).toBeNull()
+  })
+
+  it('keeps the selected scale when the chord type changes (S2a)', () => {
+    act(() => useSelectionStore.getState().setScaleType('naturalMinor'))
+    renderExplorerWithKeyboard()
+    const am7 = tiles().find((b) => b.querySelector('.explore-tile-title')?.textContent === 'Am7')
+    act(() => am7!.click())
+    expect(useSelectionStore.getState().selection.scaleType).toBe('naturalMinor')
+  })
+
+  it('does not switch the view when a chord type is chosen (S2a)', () => {
+    act(() => useSelectionStore.getState().setViewMode('chord'))
+    renderExplorerWithKeyboard()
+    const am7 = tiles().find((b) => b.querySelector('.explore-tile-title')?.textContent === 'Am7')
+    act(() => am7!.click())
+    expect(useSelectionStore.getState().selection.viewMode).toBe('chord')
   })
 })

@@ -86,7 +86,7 @@ export function activeVoices(): number {
 // Contract (tech-spec §Public / integration interface contracts):
 //   playChord(voice)     ~2.5s held; stops current playback; exact voicing
 //   playArpeggio(voice)  ~120ms per note, low to high
-//   playScale(scale, pattern='updown')  ~200ms per note, ascending then descending
+//   playScale(scale, pattern='updown'|'up'|'down')  ~200ms per note
 
 const CHORD_HOLD_MS = 2500
 const ARPEGGIO_MS = 120
@@ -162,9 +162,14 @@ export function playArpeggio(voice: number[]) {
   schedulePlayback(events)
 }
 
-export function playScale(scale: number[], pattern: 'updown' | 'up' = 'updown') {
+export function playScale(scale: number[], pattern: 'updown' | 'up' | 'down' = 'updown') {
   if (!isReady()) return
-  const notes = pattern === 'updown' ? [...scale, ...[...scale].reverse().slice(1)] : [...scale]
+  const notes =
+    pattern === 'updown'
+      ? [...scale, ...[...scale].reverse().slice(1)]
+      : pattern === 'down'
+        ? [...scale].reverse()
+        : [...scale]
   const events: PlaybackEvent[] = []
   for (let i = 0; i < notes.length; i++) {
     events.push({ atMs: i * SCALE_MS, midi: notes[i], on: true })

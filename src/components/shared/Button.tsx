@@ -1,10 +1,11 @@
-import type { ButtonHTMLAttributes } from 'react'
+import type { ButtonHTMLAttributes, Ref } from 'react'
 import './shared.css'
 
 export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: 'primary' | 'ghost'
   pressed?: boolean
   round?: boolean
+  ref?: Ref<HTMLButtonElement>
 }
 
 export default function Button({
@@ -13,6 +14,7 @@ export default function Button({
   round = false,
   className = '',
   children,
+  ref,
   ...rest
 }: ButtonProps) {
   const classes = ['btn', `btn-${variant}`, round ? 'btn-round' : '', pressed ? 'btn-pressed' : '', className]
@@ -20,6 +22,7 @@ export default function Button({
     .join(' ')
   return (
     <button
+      ref={ref}
       type="button"
       className={classes}
       aria-pressed={pressed === undefined ? undefined : pressed}

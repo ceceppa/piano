@@ -126,3 +126,52 @@
 - [bug] Scale-only view still shows chord notes — user wants only the scale's notes when View mode is scale.
 - [spec-gap] Open decision: canonical chord-to-scale mapping formulas — tech spec should state the canonical mapping formulas, including the locrian scale.
 - [spec-gap] Open decision: diminished chord-scale mapping — tech spec should state the diminished chord's scale mapping and include the diminished scale.
+
+---
+
+## Phase 4 Review — Sep 2 2026
+
+### Validation
+
+- **Result:** All Exit Criteria confirmed. The new piano sound feels realistic and no longer irritating. Explore's inversion and voicing controls still read as confusing, deepening the "a bit confusing" feedback from the Phase 2 review — a new UI/UX reference has been provided for the next design pass.
+
+### Phase checks
+
+| # | Phase promise | Result | What happened |
+|---|---|---|---|
+| E1a | Piano sound — Select a chord: it plays through the new, more realistic piano sound | passed | Confirmed. |
+| E1b | Piano sound — Play a scale ascending or descending: it also plays through the new, more realistic piano sound | passed | Confirmed. |
+| E2a | Chord inversions — Select a chord with four distinct tones: root position, first, second, and third inversion are all selectable | passed | Confirmed. |
+| E2b | Chord inversions — Select an inversion: the keyboard shows its notes bass to treble from that inversion's bass note, the bass note is visually distinct, and the slash-chord notation and inversion name are shown | passed | Confirmed. |
+| E2b+1 | With an inversion selected, the Notes panel's chord note list is ordered bass to treble to match the selected inversion, not fixed root-position order | passed | Confirmed. |
+| E2c | Chord inversions — Play the selected inversion: the sound matches the notes shown, not the root-position chord | passed | Confirmed. |
+| E3a | Chord voicings — Select the open voicing: the keyboard updates to the open-position note distribution | passed | Confirmed. |
+| E3b | Chord voicings — Select the left/right-hand voicing: the keyboard shows which notes belong to each hand with colour plus a non-colour indicator | passed | Confirmed. |
+| E3c | Chord voicings — Select any inversion together with any voicing: both apply together, on the keyboard and in playback | passed | Confirmed. |
+| E4a | Scale display — Set View mode to scale: the notes panel lists only the scale's notes, not the chord's | passed | Confirmed. |
+| E4a+1 | Set View mode to scale: the keyboard shows no chord-only elements (root/chord-tone markers, bass marker, hand-grouping brackets) — only scale markers remain | passed | Confirmed. |
+| E4b | Scale display — Select a chord with scale notes shown: the scale-tone markers appear once, starting from the scale's first visible root note, not in every keyboard section | passed | Confirmed. |
+
+### Questions
+
+| # | Question | Answer |
+|---|---|---|
+| Q1 | Does the new piano sound feel meaningfully more realistic, and less irritating, than the current one? | Yes — "is perfect now." |
+| Q2 | With inversion and voicing controls added, does Explore still feel usable, or does it deepen the "a bit confusing" feedback from the Phase 2 review? | Still confusing — deepens the Phase 2 feedback. A new UI/UX reference has been provided (ui/newui.md, ui/newone.jpeg) for the next design pass. |
+
+### Decision
+
+- **Choice:** Nothing to decide.
+
+### Assumptions
+
+| # | Assumption | Result | What showed this |
+|---|-----------|---------|------------------------|
+| A1 | Every voicing (close, open, left/right-hand) is valid in combination with every inversion, with no combination excluded | confirmed | User confirmed at review. |
+| A2 | Colour plus a non-colour indicator is enough to distinguish left/right-hand grouping on the existing single keyboard, without a separate two-row layout | confirmed | User confirmed at review. |
+| A3 | Voicing in this phase is deliberately genre-independent (close/open/left-right-hand only); genre-specific voicing is a separate, later capability | confirmed | User confirmed at review. |
+
+### Backlog changes
+
+- [ux-gap] Explore controls still confusing after inversion/voicing additions — Q2 answer: controls still read as confusing, deepening the Phase 2 feedback; new UX reference authored at ui/newui.md.
+- [ui-gap] New Explore UI/UX visual reference for redesign — new visual design reference (ui/newone.jpeg) provided to guide a redesign of the confusing Explore controls.

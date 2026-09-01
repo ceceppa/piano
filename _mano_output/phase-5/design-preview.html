@@ -1,0 +1,342 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Phase 5 — Explore clarity redesign — Design Preview</title>
+<style>
+:root[data-theme='light']{
+  --color-background:#F7F2E7; --color-surface:#FFFFFF; --color-surface-low:#F3F4F5; --color-surface-high:#E7E8E9;
+  --color-on-surface:#191C1D; --color-on-surface-variant:#45474B;
+  --color-primary:#02040A; --color-on-primary:#FFFFFF;
+  --color-secondary:#0040E0; --color-on-secondary:#FFFFFF;
+  --color-tertiary:#735C00; --color-on-tertiary:#FFFFFF;
+  --color-error:#BA1A1A; --color-outline:#76777C; --color-outline-variant:#C6C6CB;
+  --color-key-white:#FFFFFF; --color-key-black:#121417;
+  --color-scale-tone-muted:#E2E8F0; --color-highlight-teal:#00B4D8; --color-success-green:#22C55E;
+  --color-key-active:#DDE1FF;
+}
+:root[data-theme='dark']{
+  --color-background:#202224; --color-surface:#26282A; --color-surface-low:#2B2D2F; --color-surface-high:#36383A;
+  --color-on-surface:#E1E3E4; --color-on-surface-variant:#C6C8C9;
+  --color-primary:#C3C6D1; --color-on-primary:#1A1E26;
+  --color-secondary:#B8C3FF; --color-on-secondary:#0035BE;
+  --color-tertiary:#E9C349; --color-on-tertiary:#4E3D00;
+  --color-error:#FFB4AB; --color-outline:#8F9293; --color-outline-variant:#45474B;
+  --color-key-white:#F1F2F2; --color-key-black:#0D0E0F;
+  --color-scale-tone-muted:#3C3E41; --color-highlight-teal:#00B4D8; --color-success-green:#22C55E;
+  --color-key-active:#2E5BFF;
+}
+:root{
+  --font-display:"Hanken Grotesk","Segoe UI",system-ui,sans-serif;
+  --font-body:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;
+  --font-mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+  --sp:8px; --radius:0.25rem; --radius-lg:0.5rem; --radius-xl:0.75rem;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--color-background);color:var(--color-on-surface);font-family:var(--font-body);font-size:16px;line-height:24px}
+.wrap{max-width:1280px;margin:0 auto;padding:24px}
+.doc-note{background:var(--color-surface-low);border:1px dashed var(--color-outline-variant);border-radius:var(--radius-lg);padding:12px 16px;font-size:14px;line-height:20px;color:var(--color-on-surface-variant);margin:0 0 24px}
+h2.sec{font-family:var(--font-display);font-size:20px;line-height:28px;font-weight:600;margin:40px 0 12px;padding-top:20px;border-top:1px solid var(--color-outline-variant);color:var(--color-on-surface-variant);text-transform:uppercase;letter-spacing:.06em}
+.label{font-family:var(--font-mono);font-size:13px;line-height:16px;font-weight:500;letter-spacing:.05em;text-transform:uppercase;color:var(--color-on-surface-variant)}
+
+/* ---------- app shell ---------- */
+.app{background:var(--color-background);border:1px solid var(--color-outline-variant);border-radius:var(--radius-xl);overflow:hidden}
+.app-inner{padding:24px}
+.appbar{display:flex;align-items:center;justify-content:space-between;gap:16px;padding-bottom:16px;border-bottom:1px solid var(--color-outline-variant)}
+.appname{font-family:var(--font-display);font-size:20px;font-weight:600;letter-spacing:-.01em}
+.switch{display:inline-flex;align-items:center;gap:8px;font-size:14px;color:var(--color-on-surface-variant)}
+.track{width:40px;height:22px;border-radius:9999px;background:var(--color-surface-high);border:1px solid var(--color-outline-variant);position:relative}
+.track i{position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:9999px;background:var(--color-surface);border:1px solid var(--color-outline-variant);display:block}
+
+/* ---------- primary control row ---------- */
+.ctrl-row{display:flex;flex-wrap:wrap;gap:24px;align-items:flex-start;padding:20px 0}
+.ctrl{display:flex;flex-direction:column;gap:6px}
+.ctrl > .label{display:flex;align-items:center;gap:6px}
+.info{width:16px;height:16px;border-radius:9999px;border:1px solid var(--color-outline);color:var(--color-on-surface-variant);font-size:11px;line-height:14px;text-align:center;font-family:var(--font-body)}
+.seg{display:inline-flex;border:1px solid var(--color-outline-variant);border-radius:var(--radius);overflow:hidden}
+.seg button{appearance:none;border:0;border-right:1px solid var(--color-outline-variant);background:var(--color-surface);color:var(--color-on-surface);font-family:var(--font-mono);font-size:13px;letter-spacing:.05em;text-transform:uppercase;height:40px;padding:0 16px;cursor:pointer}
+.seg button:last-child{border-right:0}
+.seg button[aria-pressed="true"]{background:var(--color-primary);color:var(--color-on-primary)}
+.roots{display:flex;flex-wrap:wrap;gap:4px}
+.roots button{width:46px;height:46px;border-radius:var(--radius);border:1px solid var(--color-outline-variant);background:var(--color-surface);color:var(--color-on-surface);font-family:var(--font-mono);font-size:13px;line-height:15px;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.roots button span{font-size:10px;opacity:.75}
+.roots button[aria-pressed="true"]{background:var(--color-primary);color:var(--color-on-primary);border-color:var(--color-primary)}
+.invs{display:flex;gap:4px}
+.invs button{height:40px;padding:0 12px;border-radius:var(--radius);border:1px solid var(--color-outline-variant);background:var(--color-surface);color:var(--color-on-surface);font-family:var(--font-mono);font-size:13px;cursor:pointer}
+.invs button[aria-pressed="true"]{background:var(--color-primary);color:var(--color-on-primary);border-color:var(--color-primary)}
+
+/* ---------- selection summary + legend ---------- */
+.summary{display:flex;flex-wrap:wrap;gap:24px;align-items:flex-end;justify-content:space-between;padding:8px 0 20px}
+.title{font-family:var(--font-display);font-size:40px;line-height:48px;font-weight:700;letter-spacing:-.02em;margin:0}
+.slash{font-family:var(--font-mono);font-size:20px;line-height:28px;font-weight:600;margin-left:12px;color:var(--color-on-surface-variant)}
+.chips{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap}
+.chip{border-radius:9999px;background:var(--color-surface-low);border:1px solid var(--color-outline-variant);font-size:14px;padding:2px 12px;color:var(--color-on-surface)}
+.legend{display:grid;gap:6px;font-size:14px;color:var(--color-on-surface-variant)}
+.legend div{display:flex;align-items:center;gap:8px}
+.sw{width:22px;height:22px;border-radius:4px;border:1px solid var(--color-outline-variant);position:relative;flex:none;background:var(--color-key-white)}
+.sw.root{background:var(--color-tertiary)}
+.sw.root::after{content:"";position:absolute;inset:0;margin:auto;width:9px;height:9px;background:var(--color-on-tertiary);transform:rotate(45deg)}
+.sw.tone{background:var(--color-secondary)}
+.sw.tone::after{content:"";position:absolute;inset:0;margin:auto;width:8px;height:8px;border-radius:9999px;background:var(--color-on-secondary)}
+.sw.scale{background:var(--color-scale-tone-muted)}
+.sw.scale::after{content:"";position:absolute;inset:0;margin:auto;width:11px;height:11px;border-radius:9999px;border:2px solid var(--color-highlight-teal)}
+.sw.shared{background:var(--color-secondary)}
+.sw.shared::after{content:"";position:absolute;right:0;bottom:0;width:0;height:0;border-left:9px solid transparent;border-bottom:9px solid var(--color-highlight-teal)}
+
+/* ---------- keyboard ---------- */
+.kbband{background:var(--color-surface);border-top:1px solid var(--color-outline-variant);border-bottom:1px solid var(--color-outline-variant);padding:20px 0;margin:0 -24px}
+.kb{position:relative;height:240px;display:flex;margin:0 24px;min-width:672px}
+.wk{flex:1 0 48px;background:var(--color-key-white);border:1px solid var(--color-outline-variant);border-radius:0 0 var(--radius-lg) var(--radius-lg);position:relative}
+.bk{position:absolute;top:0;width:32px;height:55%;background:var(--color-key-black);border-radius:0 0 var(--radius) var(--radius);z-index:2}
+.wk.r{background:var(--color-tertiary)}
+.wk.t{background:var(--color-secondary)}
+.wk.s{background:var(--color-scale-tone-muted)}
+.bk.s{box-shadow:inset 0 0 0 2px var(--color-highlight-teal)}
+.m{position:absolute;left:50%;transform:translateX(-50%);bottom:22px}
+.m.diamond{width:18px;height:18px;background:var(--color-on-tertiary);transform:translateX(-50%) rotate(45deg)}
+.m.dot{width:12px;height:12px;border-radius:9999px;background:var(--color-on-secondary)}
+.m.ring{width:16px;height:16px;border-radius:9999px;border:2.5px solid var(--color-highlight-teal)}
+.m.tri{width:0;height:0;border-left:11px solid transparent;border-bottom:11px solid var(--color-highlight-teal)}
+.bk .m{bottom:10px}
+.bk .m.ring{border-color:var(--color-highlight-teal)}
+.kname{position:absolute;bottom:6px;left:0;right:0;text-align:center;font-family:var(--font-mono);font-size:11px;color:var(--color-on-surface-variant)}
+.wk.r .kname{color:var(--color-on-tertiary)}
+.wk.t .kname{color:var(--color-on-secondary)}
+
+/* ---------- playback ---------- */
+.play{display:flex;flex-wrap:wrap;align-items:center;gap:12px;padding:20px 0}
+.btn{height:40px;padding:0 16px;border-radius:var(--radius);font-family:var(--font-mono);font-size:13px;letter-spacing:.05em;text-transform:uppercase;cursor:pointer;border:1px solid transparent}
+.btn.primary{background:var(--color-primary);color:var(--color-on-primary)}
+.btn.ghost{background:transparent;color:var(--color-on-surface);border-color:var(--color-outline-variant)}
+.state{font-family:var(--font-mono);font-size:13px;letter-spacing:.05em;text-transform:uppercase;color:var(--color-on-surface-variant);margin-left:auto}
+
+/* ---------- understand card ---------- */
+.card{background:var(--color-surface);border:1px solid var(--color-outline-variant);border-radius:var(--radius-xl);padding:20px}
+.card h3{margin:0 0 12px;font-family:var(--font-mono);font-size:13px;letter-spacing:.05em;text-transform:uppercase;color:var(--color-on-surface-variant);font-weight:500}
+.notes{display:grid;grid-template-columns:auto 1fr;gap:6px 16px;align-items:baseline}
+.notes dt{font-family:var(--font-mono);font-size:13px;letter-spacing:.05em;text-transform:uppercase;color:var(--color-on-surface-variant)}
+.notes dd{margin:0;font-family:var(--font-mono);font-size:20px;line-height:28px;font-weight:600}
+.plain{margin:12px 0 0;color:var(--color-on-surface)}
+.links{display:flex;gap:16px;margin-top:12px;font-size:14px}
+.links a{color:var(--color-on-surface-variant);text-decoration:underline;text-underline-offset:3px}
+
+/* ---------- explore lists ---------- */
+.explore h3{font-family:var(--font-display);font-size:32px;line-height:40px;font-weight:600;letter-spacing:-.01em;margin:32px 0 12px}
+.grp{margin-top:16px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px;margin-top:8px}
+.tile{min-height:88px;border-radius:var(--radius);border:1px solid var(--color-outline-variant);background:var(--color-surface-low);color:var(--color-on-surface);padding:12px;text-align:left;cursor:pointer;display:flex;flex-direction:column;gap:4px;font-family:var(--font-body)}
+.tile b{font-family:var(--font-mono);font-size:20px;line-height:28px;font-weight:600}
+.tile span{font-size:14px;line-height:20px;color:var(--color-on-surface-variant)}
+.tile[aria-pressed="true"]{background:var(--color-primary);color:var(--color-on-primary);outline:2px solid var(--color-primary);outline-offset:1px}
+.tile[aria-pressed="true"] span{color:var(--color-on-primary);opacity:.85}
+
+/* ---------- specimen strip ---------- */
+.spec{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px}
+.spec .card p{font-size:14px;line-height:20px;color:var(--color-on-surface-variant);margin:8px 0 0}
+.pal{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
+.pal div{border:1px solid var(--color-outline-variant);border-radius:var(--radius);padding:8px;font-size:12px;font-family:var(--font-mono);color:var(--color-on-surface-variant);background:var(--color-surface)}
+.pal i{display:block;height:34px;border-radius:2px;margin-bottom:6px;border:1px solid var(--color-outline-variant)}
+.panel{background:var(--color-surface);border:1px solid var(--color-outline-variant);border-radius:var(--radius-xl);padding:16px;box-shadow:0 10px 30px rgba(0,0,0,.05);max-width:420px}
+.panel .label{margin-bottom:6px;display:block}
+.stack{display:flex;flex-direction:column;gap:14px}
+@media (max-width:720px){
+  .title{font-size:24px;line-height:32px}
+  .kbband{overflow-x:auto}
+  .explore h3{font-size:24px;line-height:32px}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<p class="doc-note"><strong>Phase 5 — Explore clarity redesign.</strong> Non-canonical snapshot of what phase-5 builds; <code>_mano_output/design-brief.md</code> stays the canonical visual contract. The mockup below is <strong>Both view</strong> — the busiest of the three modes, and the only one that shows all four keyboard note roles at once. Example content: root <strong>G</strong>, chord <strong>G7</strong>, scale <strong>G major</strong>, so F (chord-only) and F♯ (scale-only) both appear.
+<button class="btn ghost" style="margin-left:12px" onclick="document.documentElement.dataset.theme = document.documentElement.dataset.theme==='dark'?'light':'dark'">Toggle theme</button></p>
+
+<h2 class="sec">Explore — Both view (representative screen)</h2>
+
+<div class="app"><div class="app-inner">
+
+  <div class="appbar">
+    <div class="appname">Piano Chord Explorer</div>
+    <div class="switch"><span class="track"><i></i></span> Light</div>
+  </div>
+
+  <div class="ctrl-row">
+    <div class="ctrl">
+      <span class="label">Show on piano</span>
+      <div class="seg" role="group">
+        <button type="button" aria-pressed="false">Chord</button>
+        <button type="button" aria-pressed="false">Scale</button>
+        <button type="button" aria-pressed="true">Both</button>
+      </div>
+    </div>
+    <div class="ctrl" style="flex:1 1 380px">
+      <span class="label">Root note</span>
+      <div class="roots" role="group">
+        <button type="button" aria-pressed="false">C</button>
+        <button type="button" aria-pressed="false">C♯<span>D♭</span></button>
+        <button type="button" aria-pressed="false">D</button>
+        <button type="button" aria-pressed="false">D♯<span>E♭</span></button>
+        <button type="button" aria-pressed="false">E</button>
+        <button type="button" aria-pressed="false">F</button>
+        <button type="button" aria-pressed="false">F♯<span>G♭</span></button>
+        <button type="button" aria-pressed="true">G</button>
+        <button type="button" aria-pressed="false">G♯<span>A♭</span></button>
+        <button type="button" aria-pressed="false">A</button>
+        <button type="button" aria-pressed="false">A♯<span>B♭</span></button>
+        <button type="button" aria-pressed="false">B</button>
+      </div>
+    </div>
+    <div class="ctrl">
+      <span class="label">Inversion <span class="info" title="Changes which chord note is lowest.">?</span></span>
+      <div class="invs" role="group">
+        <button type="button" aria-pressed="true">Root</button>
+        <button type="button" aria-pressed="false">1st</button>
+        <button type="button" aria-pressed="false">2nd</button>
+        <button type="button" aria-pressed="false">3rd</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="summary">
+    <div>
+      <h1 class="title">G7 with G major scale</h1>
+      <div class="chips"><span class="chip">Chord: G7</span><span class="chip">Scale: G major</span></div>
+    </div>
+    <div class="legend">
+      <div><span class="sw root"></span> Root — G</div>
+      <div><span class="sw tone"></span> Chord note — F</div>
+      <div><span class="sw scale"></span> Scale note — A, C, E, F♯</div>
+      <div><span class="sw shared"></span> Chord + scale — B, D</div>
+    </div>
+  </div>
+
+  <div class="kbband">
+    <div class="kb">
+      <div class="wk s"><span class="m ring"></span><span class="kname">C</span></div>
+      <div class="wk t"><span class="m tri"></span><span class="kname">D</span></div>
+      <div class="wk s"><span class="m ring"></span><span class="kname">E</span></div>
+      <div class="wk t"><span class="m dot"></span><span class="kname">F</span></div>
+      <div class="wk r"><span class="m diamond"></span><span class="kname">G</span></div>
+      <div class="wk s"><span class="m ring"></span><span class="kname">A</span></div>
+      <div class="wk t"><span class="m tri"></span><span class="kname">B</span></div>
+      <div class="wk s"><span class="m ring"></span><span class="kname">C</span></div>
+      <div class="wk t"><span class="m tri"></span><span class="kname">D</span></div>
+      <div class="wk s"><span class="m ring"></span><span class="kname">E</span></div>
+      <div class="wk t"><span class="m dot"></span><span class="kname">F</span></div>
+      <div class="wk r"><span class="m diamond"></span><span class="kname">G</span></div>
+      <div class="wk s"><span class="m ring"></span><span class="kname">A</span></div>
+      <div class="wk t"><span class="m tri"></span><span class="kname">B</span></div>
+      <div class="bk" style="left:calc(1*(100%/14) - 16px)"></div>
+      <div class="bk" style="left:calc(2*(100%/14) - 16px)"></div>
+      <div class="bk s" style="left:calc(4*(100%/14) - 16px)"><span class="m ring"></span></div>
+      <div class="bk" style="left:calc(5*(100%/14) - 16px)"></div>
+      <div class="bk" style="left:calc(6*(100%/14) - 16px)"></div>
+      <div class="bk" style="left:calc(8*(100%/14) - 16px)"></div>
+      <div class="bk" style="left:calc(9*(100%/14) - 16px)"></div>
+      <div class="bk s" style="left:calc(11*(100%/14) - 16px)"><span class="m ring"></span></div>
+      <div class="bk" style="left:calc(12*(100%/14) - 16px)"></div>
+      <div class="bk" style="left:calc(13*(100%/14) - 16px)"></div>
+    </div>
+  </div>
+
+  <div class="play">
+    <button class="btn primary" type="button">Hear G7</button>
+    <button class="btn ghost" type="button">Arpeggiate</button>
+    <button class="btn ghost" type="button">Play scale</button>
+    <button class="btn ghost" type="button">Chord options</button>
+    <span class="state">Close voicing · Both hands</span>
+  </div>
+
+  <div class="card">
+    <h3>Understand G7 and G major</h3>
+    <dl class="notes">
+      <dt>Chord</dt><dd>G · B · D · F</dd>
+      <dt>Scale</dt><dd>G · A · B · C · D · E · F♯</dd>
+      <dt>Shared</dt><dd>G · B · D</dd>
+    </dl>
+    <p class="plain">G7 sits on the G major scale, except for its F — lowered from F♯, which is what gives the chord its pull back to C.</p>
+    <p class="links"><a href="#">Show intervals</a><a href="#">Show scale degrees</a></p>
+  </div>
+
+  <div class="explore">
+    <h3>Explore G chord types</h3>
+
+    <div class="grp"><span class="label">Common</span>
+      <div class="grid">
+        <button class="tile" type="button" aria-pressed="false"><b>G</b><span>Bright and settled</span></button>
+        <button class="tile" type="button" aria-pressed="false"><b>Gm</b><span>Darker, softer</span></button>
+        <button class="tile" type="button" aria-pressed="true"><b>G7</b><span>Wants to resolve</span></button>
+        <button class="tile" type="button" aria-pressed="false"><b>Gmaj7</b><span>Warm and open</span></button>
+      </div>
+    </div>
+
+    <div class="grp"><span class="label">Colour</span>
+      <div class="grid">
+        <button class="tile" type="button" aria-pressed="false"><b>Gsus2</b><span>Neither major nor minor</span></button>
+        <button class="tile" type="button" aria-pressed="false"><b>Gsus4</b><span>Suspended, unresolved</span></button>
+        <button class="tile" type="button" aria-pressed="false"><b>G6</b><span>Gentle and vintage</span></button>
+        <button class="tile" type="button" aria-pressed="false"><b>Gadd9</b><span>Major with extra sparkle</span></button>
+      </div>
+    </div>
+
+    <div class="grp"><span class="label">Sevenths &amp; extensions</span>
+      <div class="grid">
+        <button class="tile" type="button" aria-pressed="false"><b>Gm7</b><span>Smooth and mellow</span></button>
+        <button class="tile" type="button" aria-pressed="false"><b>G9</b><span>Fuller seventh</span></button>
+        <button class="tile" type="button" aria-pressed="false"><b>Gdim</b><span>Tense and unstable</span></button>
+        <button class="tile" type="button" aria-pressed="false"><b>Gaug</b><span>Stretched and restless</span></button>
+      </div>
+    </div>
+
+    <h3>Explore G scales</h3>
+    <div class="grp"><span class="label">Common</span>
+      <div class="grid">
+        <button class="tile" type="button" aria-pressed="true"><b>Major</b><span>Bright, resolved, seven notes</span></button>
+        <button class="tile" type="button" aria-pressed="false"><b>Natural minor</b><span>Darker, seven notes</span></button>
+      </div>
+    </div>
+  </div>
+
+</div></div>
+
+<h2 class="sec">Chord options — panel contents (Chord and Both views)</h2>
+<div class="panel">
+  <span class="label">Voicing</span>
+  <div class="seg" role="group" style="margin-bottom:14px">
+    <button type="button" aria-pressed="true">Close</button>
+    <button type="button" aria-pressed="false">Open</button>
+  </div>
+  <span class="label">Hand arrangement</span>
+  <div class="seg" role="group">
+    <button type="button" aria-pressed="true">Both hands</button>
+    <button type="button" aria-pressed="false">Left / Right</button>
+  </div>
+  <p style="font-size:14px;line-height:20px;color:var(--color-on-surface-variant);margin:14px 0 0">Anchored popover on desktop, bottom sheet on tablet and mobile. Closing returns focus to the “Chord options” button.</p>
+</div>
+
+<h2 class="sec">What each view shows</h2>
+<div class="spec">
+  <div class="card"><h3>Chord view</h3><p>View · root · inversion selectors. Chord notes only in Understand. “Explore G chord types” only — the scale list is hidden and its selection kept. Playback: Hear G7 / Arpeggiate / Chord options.</p></div>
+  <div class="card"><h3>Scale view</h3><p>No inversion selector. Understand shows scale notes and never any chord content, on screen or to a screen reader. “Explore G scales” only. Playback: Hear G major / Play descending.</p></div>
+  <div class="card"><h3>Both view</h3><p>Everything above, plus the shared-notes row and the shared-note triangle marker. Both lists stack below the piano, chord types first, every supported option visible.</p></div>
+</div>
+
+<h2 class="sec">Palette in this theme</h2>
+<div class="pal">
+  <div><i style="background:var(--color-background)"></i>--color-background</div>
+  <div><i style="background:var(--color-surface)"></i>--color-surface</div>
+  <div><i style="background:var(--color-surface-low)"></i>--color-surface-low</div>
+  <div><i style="background:var(--color-primary)"></i>--color-primary</div>
+  <div><i style="background:var(--color-secondary)"></i>--color-secondary</div>
+  <div><i style="background:var(--color-tertiary)"></i>--color-tertiary</div>
+  <div><i style="background:var(--color-scale-tone-muted)"></i>--color-scale-tone-muted</div>
+  <div><i style="background:var(--color-highlight-teal)"></i>--color-highlight-teal</div>
+</div>
+
+<p class="doc-note" style="margin:32px 0 0">Marker shapes carry the meaning before colour does: filled diamond = root, filled dot = chord note, hollow teal ring = scale note, teal corner triangle = a note in both. Every contrast pairing is the one already verified in <code>design-brief.md</code>.</p>
+
+</div>
+</body>
+</html>

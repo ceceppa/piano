@@ -61,6 +61,8 @@
 - **Source:** piano.md
 - **Context:**
   Common choices immediately visible; less common chord qualities and modes live behind an Advanced control on Explore.
+  Phase-5 deliberately kept every supported option visible instead, because the catalogue is still small.
+  The same control also provides the See-all expand for Both view once either catalogue grows enough to crowd the piano.
 - **Status:** backlog
 
 ### Piano keyboard visualisation with layered highlighting
@@ -127,7 +129,7 @@
   Root position, first, second, third when the chord has four distinct tones, further when five or more.
   Each shows ordered notes bass to treble, matching keys, bass note with distinct marker, slash-chord notation (A/C♯, A/E), inversion name and a playback action.
   Changing inversion updates the existing keyboard rather than opening a separate screen.
-- **Status:** in-phase-4
+- **Status:** resolved
 
 ### Open voicings and left/right-hand arrangements as a separate concept
 - **Type:** feature
@@ -135,7 +137,7 @@
 - **Context:**
   Distinct from inversions: describes note distribution (close, open, left/right-hand) rather than only the bass note.
   Open and genre-specific voicings are within the product capability scope (section 11).
-- **Status:** in-phase-4
+- **Status:** resolved
 
 ### Playing style and performance controls over the current selection
 - **Type:** feature
@@ -246,6 +248,8 @@
 - **Source:** piano.md
 - **Context:**
   Settings covers display, notation, playback, accessibility and local backup preferences.
+  Also owns the keyboard-range (octave) and note-name preferences that phase-5 removed from Explore.
+  Until Settings exists, Explore keeps a temporary light/dark control in its header.
 - **Status:** backlog
 
 ### Backup export and import from local data
@@ -376,6 +380,8 @@
 - **Source:** piano.md
 - **Context:**
   In the product capability scope (section 11); future expansion over the base catalogue.
+  Phase-5's Explore scales picker ships with the supported scales only (major, natural minor).
+  The redesign reference names harmonic minor, major and minor pentatonic and blues as the intended next additions, then modes.
 - **Status:** backlog
 
 ### MIDI input and chord detection
@@ -495,7 +501,7 @@
 - **Source:** phase-2 review
 - **Context:**
   The single-page chord-first layout works, but the overall UI still feels a bit confusing. Flagged for a later rethink rather than this phase.
-- **Status:** backlog
+- **Status:** in-phase-5
 
 ### Show chord and scale notes beneath the keyboard
 - **Type:** feature
@@ -516,14 +522,14 @@
 - **Source:** phase-3 review
 - **Context:**
   Scale-tone markers currently repeat identically in every octave/section of the keyboard, which reads as confusing. Show them once, starting from the scale's first visible root note.
-- **Status:** in-phase-4
+- **Status:** resolved
 
 ### Scale-only view still shows chord notes
 - **Type:** bug
 - **Source:** phase-3 review
 - **Context:**
   With View mode set to scale, the notes panel still shows the chord's notes. The user wants only the scale's notes displayed in that mode.
-- **Status:** in-phase-4
+- **Status:** resolved
 
 ### Open decision: canonical chord-to-scale mapping formulas
 - **Type:** spec-gap
@@ -546,4 +552,27 @@
 - **Context:**
   Current piano playback sound is irritating; needs a more realistic timbre.
   User stated preference: "we need to add @tonejs/piano for a more realisting piano sound as the current one is irritating"
-- **Status:** in-phase-4
+- **Status:** resolved
+
+### Explore controls still confusing after inversion/voicing additions
+- **Type:** ux-gap
+- **Source:** phase-4 review
+- **Context:**
+  Phase 4 review Q2: with inversion and voicing controls added, Explore still reads as confusing, continuing the "a bit confusing" feedback from the Phase 2 review. A new UX reference has been authored at ui/newui.md for the next UX pass.
+- **Status:** resolved
+
+### New Explore UI/UX visual reference for redesign
+- **Type:** ui-gap
+- **Source:** phase-4 review
+- **Context:**
+  Phase 4 review Q2: a new visual design reference (ui/newone.jpeg) has been provided to guide a redesign of the confusing Explore controls.
+- **Status:** resolved
+
+### Key and mode selection returns once a screen owns it
+- **Type:** feature
+- **Source:** phase-5
+- **Context:**
+  Phase 5 removes the key/mode control from Explore because it competed with the chord-first task.
+  Key/mode shipped in phase-1 and is unavailable anywhere until a later screen brings it back.
+  The redesign reference (ui/newui.md) places key, mode and genre context on the future Progressions screen.
+- **Status:** backlog

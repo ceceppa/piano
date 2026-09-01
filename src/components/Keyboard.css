@@ -18,15 +18,24 @@
   overflow-x: auto;
 }
 
+/* The scrolling track holds both key rows, so the absolutely-positioned black
+   keys are placed against the same width the white keys occupy. Without it they
+   would be laid out across the visible band instead, and drift out of alignment
+   as soon as the keyboard scrolls. */
+.keyboard-track {
+  position: relative;
+  width: 100%;
+  min-width: max-content;
+}
+
 .keyboard-whites {
   display: flex;
-  min-width: 560px;
 }
 
 .keyboard-blacks {
   position: absolute;
-  top: 24px;
-  bottom: 24px;
+  top: 0;
+  bottom: 0;
   left: 0;
   right: 0;
   pointer-events: none;
@@ -50,8 +59,11 @@
   z-index: 4;
 }
 
+/* With no range control to fall back on, a narrow screen scrolls the band
+   rather than shrinking keys below a usable width (phase brief 5a). */
 .key-white {
-  flex: 1 1 0;
+  flex: 1 0 44px;
+  min-width: 44px;
   height: 180px;
   background: var(--color-key-white);
   border: 1px solid var(--color-outline-variant);
@@ -89,6 +101,13 @@
   background: var(--color-scale-tone-muted);
 }
 
+/* A note in both the chord and the scale keeps the chord-tone fill and changes
+   marker shape, so the role reads before colour does (design-brief §Piano
+   Keyboard, chord+scale shared note). */
+.key-shared {
+  background: var(--color-secondary);
+}
+
 .key-root {
   background: var(--color-tertiary);
 }
@@ -115,7 +134,8 @@
   color: var(--color-on-tertiary);
 }
 
-.key-chord-tone .key-face {
+.key-chord-tone .key-face,
+.key-shared .key-face {
   color: var(--color-on-secondary);
 }
 
@@ -139,11 +159,20 @@
   background: var(--color-on-secondary);
 }
 
+/* A corner triangle, not the chord-tone dot: the shape change is what marks a
+   note as shared, with teal carrying the scale half of its meaning. */
+.key .marker-shared {
+  width: 8px;
+  height: 8px;
+  background: var(--color-highlight-teal);
+  clip-path: polygon(100% 0, 100% 100%, 0 100%);
+}
+
 .key .marker-scale-note {
   width: 16px;
   height: 16px;
   border-radius: 50%;
-  border: 2px solid var(--color-secondary);
+  border: 2px solid var(--color-highlight-teal);
 }
 
 /* Voiced-instance outline (phase-4) — marks exactly the specific octave each
@@ -184,6 +213,7 @@
    --color-secondary fill (2.8:1) — --color-on-primary passes against both
    fills in both themes (design-brief §Piano Keyboard, Bass marker colour rule). */
 .key-root .marker-bass,
+.key-shared .marker-bass,
 .key-chord-tone .marker-bass {
   background: var(--color-on-primary);
 }

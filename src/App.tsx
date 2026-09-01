@@ -1,19 +1,15 @@
-import { useEffect, useState } from 'react'
-import { chordFullName, inversionName, slashChordLabel } from './musicCore'
+import { useEffect } from 'react'
 import { useSelectionStore } from './store/useSelectionStore'
 import Keyboard from './components/Keyboard'
-import NotesPanel from './components/NotesPanel'
+import SelectionSummary from './components/SelectionSummary'
+import UnderstandSection from './components/UnderstandSection'
+import Legend from './components/Legend'
 import RootSelector from './components/root-selector'
-import QualitySelector from './components/quality-selector'
 import InversionSelector from './components/inversion-selector'
-import VoicingSelector from './components/voicing-selector'
-import KeyModeSelector from './components/key-mode-selector'
-import ScaleFollow from './components/scale-follow'
 import ViewModeSelector from './components/view-mode-selector'
-import GenreSelector from './components/genre-selector'
 import PlaybackBar from './components/PlaybackBar'
 import ChordTypeExplorer from './components/ChordTypeExplorer'
-import Select from './components/shared/Select'
+import ScaleTypeExplorer from './components/ScaleTypeExplorer'
 import ToggleSwitch from './components/shared/ToggleSwitch'
 import './App.css'
 
@@ -21,14 +17,13 @@ function App() {
   const theme = useSelectionStore((s) => s.theme)
   const setTheme = useSelectionStore((s) => s.setTheme)
   const selection = useSelectionStore((s) => s.selection)
-  const octaveStart = useSelectionStore((s) => s.octaveStart)
-  const octaveEnd = useSelectionStore((s) => s.octaveEnd)
-  const setOctaveRange = useSelectionStore((s) => s.setOctaveRange)
-  const [showNoteNames, setShowNoteNames] = useState(false)
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme
   }, [theme])
+
+  const showChord = selection.viewMode !== 'scale'
+  const showScale = selection.viewMode !== 'chord'
 
   return (
     <div className="app">
@@ -40,57 +35,21 @@ function App() {
           onChange={(dark) => setTheme(dark ? 'dark' : 'light')}
         />
       </header>
-      <h2 className="chord-title">
-        {chordFullName(selection.root, selection.quality)}
-        {selection.inversion !== 0 && (
-          <>
-            {' '}
-            <span className="slash-label">
-              {slashChordLabel({ root: selection.root, quality: selection.quality }, selection.inversion)}
-            </span>{' '}
-            <span className="inversion-name">{inversionName(selection.inversion)}</span>
-          </>
-        )}
-      </h2>
       <main className="explore" aria-label="Explore">
-        <div className="controls-dominant">
+        {/* Primary selection row — one tier: what to show, which root, which
+            inversion (design-brief §Screen Composition, phase-5 item 2). */}
+        <div className="controls-primary">
+          <ViewModeSelector />
           <RootSelector />
-          <QualitySelector />
-          <InversionSelector />
-          <VoicingSelector />
+          {showChord && <InversionSelector />}
         </div>
-        <Keyboard showNoteNames={showNoteNames} />
-        <NotesPanel />
-        <div className="controls-secondary">
-          <KeyModeSelector />
-          <div className="controls-row">
-            <ScaleFollow />
-            <ViewModeSelector />
-          </div>
-          <div className="controls-row">
-            <Select
-              label="Keyboard range"
-              value={`${octaveStart}-${octaveEnd}`}
-              onChange={(e) => {
-                const [start, end] = e.target.value.split('-').map(Number)
-                setOctaveRange(start, end)
-              }}
-            >
-              <option value="48-59">1 octave (C3–B3)</option>
-              <option value="48-71">2 octaves (C3–B4)</option>
-              <option value="48-83">3 octaves (C3–B5)</option>
-              <option value="36-47">Lower octave (C2–B2)</option>
-            </Select>
-            <GenreSelector />
-          </div>
-          <ToggleSwitch
-            label="Show note names"
-            checked={showNoteNames}
-            onChange={setShowNoteNames}
-          />
-        </div>
+        <SelectionSummary aside={<Legend />} />
+        <Keyboard />
         <PlaybackBar />
-        <ChordTypeExplorer />
+        <UnderstandSection />
+        {/* Both view stacks both lists below the piano, chord types first. */}
+        {showChord && <ChordTypeExplorer />}
+        {showScale && <ScaleTypeExplorer />}
       </main>
     </div>
   )

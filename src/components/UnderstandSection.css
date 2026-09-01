@@ -1,0 +1,55 @@
+/* Understand section — design-brief §Understand section (supersedes the phase-3
+   Notes panel). Same Card treatment and label-mono header. */
+
+.understand-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.understand-label {
+  font: var(--text-label-mono);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--color-on-surface-variant);
+}
+
+.understand-value {
+  font: var(--text-notation-lg);
+  color: var(--color-on-surface);
+}
+
+.understand-sentence {
+  font: var(--text-body-sm);
+  color: var(--color-on-surface-variant);
+}
+
+/* An optional detail row that expands inside the card, without moving the
+   person off the page. */
+.understand-detail-toggle {
+  align-self: flex-start;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: var(--text-body-sm);
+  color: var(--color-on-surface);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.understand-detail-toggle:focus-visible {
+  outline: 2px solid var(--color-secondary);
+  outline-offset: 2px;
+}
+
+.understand-detail {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.understand-detail .understand-value {
+  font: var(--text-label-mono);
+  letter-spacing: 0.05em;
+}

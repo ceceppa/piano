@@ -10,7 +10,10 @@ import {
   QUALITIES,
   rootPositionVoice,
   scaleLabel,
+  scaleName,
+  scaleStepPattern,
   scaleTones,
+  sharedTones,
   slashChordLabel,
   validInversionCount,
   variationsFor,
@@ -94,7 +97,15 @@ describe('scaleTones', () => {
 
   it('labels scales with the expected names', () => {
     expect(scaleLabel(C, 'major')).toBe('C major')
-    expect(scaleLabel(A, 'naturalMinor')).toBe('A minor')
+    expect(scaleLabel(A, 'naturalMinor')).toBe('A natural minor')
+    // Every scale gets its own name, not a major/minor fallback.
+    expect(scaleLabel(C, 'mixolydian')).toBe('C mixolydian')
+    expect(scaleName('naturalMinor')).toBe('Natural minor')
+  })
+
+  it('derives the whole/half step pattern from the interval formula', () => {
+    expect(scaleStepPattern('major')).toBe('W · W · H · W · W · W · H')
+    expect(scaleStepPattern('naturalMinor')).toBe('W · H · W · W · H · W · W')
   })
 })
 
@@ -277,5 +288,30 @@ describe('voice', () => {
     const notes = voice({ root: C, quality: '7' }, 2, 'leftRight')
     expect(notes[0].hand).toBe('left')
     expect(notes[0].midi).toBeLessThan(notes[1].midi)
+  })
+})
+
+describe('sharedTones', () => {
+  it('returns the notes a chord and a scale have in common, in chord-tone order', () => {
+    // C major triad sits entirely inside the C major scale.
+    expect(sharedTones(C, 'major', 'major')).toEqual(chordTones(C, 'major'))
+  })
+
+  it('leaves out a chord tone the scale does not contain', () => {
+    // C augmented is C · E · G♯; G♯ is not in C major.
+    expect(sharedTones(C, 'augmented', 'major')).toEqual([0, 4])
+    // Against C natural minor the third drops out instead: C and G♯ remain.
+    expect(sharedTones(C, 'augmented', 'naturalMinor')).toEqual([0, 8])
+  })
+
+  it('agrees with chordTones and scaleTones for every quality and selectable scale', () => {
+    for (const q of QUALITIES) {
+      for (const scale of ['major', 'naturalMinor'] as const) {
+        const scaleSet = new Set(scaleTones(A, scale))
+        expect(sharedTones(A, q.id, scale)).toEqual(
+          chordTones(A, q.id).filter((pc) => scaleSet.has(pc)),
+        )
+      }
+    }
   })
 })

@@ -1,10 +1,10 @@
 import { useRef } from 'react'
-import { chordScaleType, noteName, scaleTones, voice } from '../musicCore'
+import { noteName, scaleTones, voice } from '../musicCore'
 import { useSelectionStore } from '../store/useSelectionStore'
 import * as audioEngine from '../audioEngine'
 import './Keyboard.css'
 
-export type KeyState = 'root' | 'chord-tone' | 'scale-note' | 'plain'
+export type KeyState = 'root' | 'chord-tone' | 'shared' | 'scale-note' | 'plain'
 
 interface KeyboardProps {
   /** When true, one-time labels on every key (outside the octave-range control). */
@@ -27,6 +27,10 @@ function keyRange(startMidi: number, endMidi: number): number[] {
   return midis
 }
 
+/**
+ * One key, one role, decided in the order the tech spec fixes
+ * (§Keyboard note roles): root, then shared, then chord, then scale.
+ */
 function classify(
   midi: number,
   root: number,
@@ -34,12 +38,20 @@ function classify(
   scaleSet: Set<number>,
   viewMode: 'chord' | 'scale' | 'both',
   inScaleBand: (midi: number) => boolean,
+  scaleBandStart: number,
 ): KeyState {
   const pc = midi % 12
   // Root/chord-tone marks only the current voicing's exact notes, once
   // (S2b+1, phase-4 correction) — not every octave repeat of the pitch class.
-  if (viewMode !== 'scale' && voicedMidis.has(midi)) return pc === root ? 'root' : 'chord-tone'
-  if (viewMode !== 'chord' && scaleSet.has(pc) && inScaleBand(midi)) return 'scale-note'
+  if (viewMode !== 'scale' && voicedMidis.has(midi)) {
+    if (pc === root) return 'root'
+    return viewMode === 'both' && scaleSet.has(pc) ? 'shared' : 'chord-tone'
+  }
+  if (viewMode !== 'chord' && scaleSet.has(pc) && inScaleBand(midi)) {
+    // Scale view has no chord to carry the root, so the scale's own root — the
+    // key the band starts from — takes it.
+    return viewMode === 'scale' && midi === scaleBandStart ? 'root' : 'scale-note'
+  }
   return 'plain'
 }
 
@@ -50,9 +62,8 @@ export default function Keyboard({ showNoteNames = false }: KeyboardProps) {
 
   const held = useRef<Set<number>>(new Set())
 
-  const { root, quality, key, scaleMode, viewMode, inversion, voicingType } = selection
-  const scaleRoot = scaleMode === 'key' ? key.root : root
-  const scaleType = scaleMode === 'key' ? key.scaleType : chordScaleType(quality)
+  const { root, quality, scaleType, viewMode, inversion, voicingType } = selection
+  const scaleRoot = root
   const scaleSet = new Set(scaleTones(scaleRoot, scaleType))
 
   // tech-spec §Data model → DisplayRange: the effective low bound relaxes to
@@ -61,9 +72,11 @@ export default function Keyboard({ showNoteNames = false }: KeyboardProps) {
   const bassMidi = voicedNotes[0]?.midi
   const handByMidi = new Map(voicedNotes.filter((n) => n.hand).map((n) => [n.midi, n.hand]))
   const voicedMidis = new Set(voicedNotes.map((n) => n.midi))
+  const topMidi = voicedNotes[voicedNotes.length - 1]?.midi
   const effectiveStart = bassMidi === undefined ? storeOctaveStart : Math.min(storeOctaveStart, bassMidi)
+  const effectiveEnd = topMidi === undefined ? storeOctaveEnd : Math.max(storeOctaveEnd, topMidi)
 
-  const midis = keyRange(effectiveStart, storeOctaveEnd)
+  const midis = keyRange(effectiveStart, effectiveEnd)
 
   // Scale-tone markers show once, starting from the scale's first visible
   // root note, instead of repeating in every octave (phase-3 review).
@@ -132,6 +145,14 @@ export default function Keyboard({ showNoteNames = false }: KeyboardProps) {
         <span className="key-marker marker-chord-tone" aria-label={`${midiLabel(midi)} is a chord tone`} />
       )
     }
+    if (state === 'shared') {
+      return (
+        <span
+          className="key-marker marker-shared"
+          aria-label={`${midiLabel(midi)} is in both the chord and the scale`}
+        />
+      )
+    }
     if (state === 'scale-note') {
       return (
         <span className="key-marker marker-scale-note" aria-label={`${midiLabel(midi)} is a scale note`} />
@@ -168,67 +189,69 @@ export default function Keyboard({ showNoteNames = false }: KeyboardProps) {
           )}
         </div>
       )}
-      <div className="keyboard" role="group" aria-label={`Piano keyboard ${effectiveStart}–${storeOctaveEnd}`}>
-        <div className="keyboard-whites">
-          {whiteMidis.map((midi) => {
-            const state: KeyState = classify(midi, root, voicedMidis, scaleSet, viewMode, inScaleBand)
-            return (
-              <button
-                key={midi}
-                type="button"
-                className={`key key-white key-${state}${showChordElements && midi === bassMidi ? ' key-bass' : ''}${showChordElements && voicedMidis.has(midi) ? ' key-voiced' : ''}`}
-                data-midi={midi}
-                data-state={state}
-                data-bass={(showChordElements && midi === bassMidi) || undefined}
-                data-voiced={(showChordElements && voicedMidis.has(midi)) || undefined}
-                data-hand={handByMidi.get(midi)}
-                aria-label={midiLabel(midi)}
-                onPointerDown={keyHandlers.onPointerDown(midi)}
-                onPointerUp={keyHandlers.onPointerUp(midi)}
-                onPointerCancel={keyHandlers.onPointerCancel(midi)}
-                onPointerLeave={keyHandlers.onPointerLeave(midi)}
-                onKeyDown={keyHandlers.onKeyDown(midi)}
-                onKeyUp={keyHandlers.onKeyUp(midi)}
-              >
-                <span className="key-face" aria-hidden="true">
-                  {showNoteNames ? midiLabel(midi) : ''}
-                </span>
-                {marker(midi, state)}
-                {bassBar(midi)}
-              </button>
-            )
-          })}
-        </div>
-        <div className="keyboard-blacks">
-          {blackMidis.map((midi) => {
-            const state: KeyState = classify(midi, root, voicedMidis, scaleSet, viewMode, inScaleBand)
-            return (
-              <button
-                key={midi}
-                type="button"
-                className={`key key-black key-${state}${showChordElements && midi === bassMidi ? ' key-bass' : ''}${showChordElements && voicedMidis.has(midi) ? ' key-voiced' : ''}`}
-                data-midi={midi}
-                data-state={state}
-                data-bass={(showChordElements && midi === bassMidi) || undefined}
-                data-voiced={(showChordElements && voicedMidis.has(midi)) || undefined}
-                data-hand={handByMidi.get(midi)}
-                aria-label={midiLabel(midi)}
-                style={{ left: blackLeft(midi), width: blackWidth() }}
-                onPointerDown={keyHandlers.onPointerDown(midi)}
-                onPointerUp={keyHandlers.onPointerUp(midi)}
-                onPointerCancel={keyHandlers.onPointerCancel(midi)}
-                onPointerLeave={keyHandlers.onPointerLeave(midi)}
-                onKeyDown={keyHandlers.onKeyDown(midi)}
-                onKeyUp={keyHandlers.onKeyUp(midi)}
-              >
-                <span className="key-face" aria-hidden="true">
-                  {showNoteNames ? midiLabel(midi) : ''}
-                </span>
-                {marker(midi, state)}
-                {bassBar(midi)}
-              </button>
-            )
-          })}
+      <div className="keyboard" role="group" aria-label={`Piano keyboard ${effectiveStart}–${effectiveEnd}`}>
+        <div className="keyboard-track">
+          <div className="keyboard-whites">
+            {whiteMidis.map((midi) => {
+              const state: KeyState = classify(midi, root, voicedMidis, scaleSet, viewMode, inScaleBand, scaleBandStart)
+              return (
+                <button
+                  key={midi}
+                  type="button"
+                  className={`key key-white key-${state}${showChordElements && midi === bassMidi ? ' key-bass' : ''}${showChordElements && voicedMidis.has(midi) ? ' key-voiced' : ''}`}
+                  data-midi={midi}
+                  data-state={state}
+                  data-bass={(showChordElements && midi === bassMidi) || undefined}
+                  data-voiced={(showChordElements && voicedMidis.has(midi)) || undefined}
+                  data-hand={handByMidi.get(midi)}
+                  aria-label={midiLabel(midi)}
+                  onPointerDown={keyHandlers.onPointerDown(midi)}
+                  onPointerUp={keyHandlers.onPointerUp(midi)}
+                  onPointerCancel={keyHandlers.onPointerCancel(midi)}
+                  onPointerLeave={keyHandlers.onPointerLeave(midi)}
+                  onKeyDown={keyHandlers.onKeyDown(midi)}
+                  onKeyUp={keyHandlers.onKeyUp(midi)}
+                >
+                  <span className="key-face" aria-hidden="true">
+                    {showNoteNames ? midiLabel(midi) : ''}
+                  </span>
+                  {marker(midi, state)}
+                  {bassBar(midi)}
+                </button>
+              )
+            })}
+          </div>
+          <div className="keyboard-blacks">
+            {blackMidis.map((midi) => {
+              const state: KeyState = classify(midi, root, voicedMidis, scaleSet, viewMode, inScaleBand, scaleBandStart)
+              return (
+                <button
+                  key={midi}
+                  type="button"
+                  className={`key key-black key-${state}${showChordElements && midi === bassMidi ? ' key-bass' : ''}${showChordElements && voicedMidis.has(midi) ? ' key-voiced' : ''}`}
+                  data-midi={midi}
+                  data-state={state}
+                  data-bass={(showChordElements && midi === bassMidi) || undefined}
+                  data-voiced={(showChordElements && voicedMidis.has(midi)) || undefined}
+                  data-hand={handByMidi.get(midi)}
+                  aria-label={midiLabel(midi)}
+                  style={{ left: blackLeft(midi), width: blackWidth() }}
+                  onPointerDown={keyHandlers.onPointerDown(midi)}
+                  onPointerUp={keyHandlers.onPointerUp(midi)}
+                  onPointerCancel={keyHandlers.onPointerCancel(midi)}
+                  onPointerLeave={keyHandlers.onPointerLeave(midi)}
+                  onKeyDown={keyHandlers.onKeyDown(midi)}
+                  onKeyUp={keyHandlers.onKeyUp(midi)}
+                >
+                  <span className="key-face" aria-hidden="true">
+                    {showNoteNames ? midiLabel(midi) : ''}
+                  </span>
+                  {marker(midi, state)}
+                  {bassBar(midi)}
+                </button>
+              )
+            })}
+          </div>
         </div>
       </div>
     </div>

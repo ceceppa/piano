@@ -95,10 +95,65 @@
 }
 
 .seg-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
   font: var(--text-label-mono);
   letter-spacing: 0.05em;
   text-transform: uppercase;
   color: var(--color-on-surface-variant);
+}
+
+/* "?" affordance beside a control's label — design-brief §Inversion selector. */
+.seg-hint {
+  position: relative;
+  display: inline-flex;
+}
+
+.seg-hint-toggle {
+  width: 16px;
+  height: 16px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--color-outline-variant);
+  border-radius: 9999px;
+  background: transparent;
+  color: var(--color-on-surface-variant);
+  font: var(--text-body-sm);
+  line-height: 1;
+  cursor: pointer;
+}
+
+.seg-hint-toggle:focus-visible {
+  outline: 2px solid var(--color-secondary);
+  outline-offset: 2px;
+}
+
+.seg-hint-text {
+  display: none;
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  z-index: 2;
+  width: max-content;
+  max-width: 220px;
+  padding: 6px 10px;
+  border: 1px solid var(--color-outline-variant);
+  border-radius: 0.25rem;
+  background: var(--color-surface);
+  color: var(--color-on-surface);
+  font: var(--text-body-sm);
+  letter-spacing: normal;
+  text-transform: none;
+  box-shadow: 0 10px 30px rgb(0 0 0 / 5%);
+}
+
+.seg-hint:hover .seg-hint-text,
+.seg-hint:focus-within .seg-hint-text,
+.seg-hint-text[data-open] {
+  display: block;
 }
 
 .seg {
@@ -230,4 +285,51 @@
   border: 1px solid var(--color-outline-variant);
   color: var(--color-on-surface);
   font: var(--text-body-sm);
+}
+
+/* ---- ExploreTile ----
+   One tile in an Explore list. Selected state is --color-primary fill plus a
+   2px outline as the non-colour cue; --color-secondary stays reserved for the
+   chord-tone musical role (design-brief §Chord-type tile grid). */
+.explore-tile {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 4px;
+  min-height: 88px;
+  padding: 12px;
+  background: var(--color-surface-low);
+  border: 1px solid var(--color-outline-variant);
+  border-radius: 0.25rem;
+  color: var(--color-on-surface);
+  text-align: left;
+  cursor: pointer;
+}
+
+.explore-tile:focus-visible {
+  outline: 2px solid var(--color-secondary);
+  outline-offset: -2px;
+}
+
+.explore-tile-title {
+  font: var(--text-notation-lg);
+  color: var(--color-on-surface);
+}
+
+.explore-tile-label {
+  font: var(--text-body-sm);
+  color: var(--color-on-surface-variant);
+}
+
+.explore-tile-selected {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  outline: 2px solid var(--color-primary);
+  outline-offset: -2px;
+}
+
+.explore-tile-selected .explore-tile-title,
+.explore-tile-selected .explore-tile-label {
+  color: var(--color-on-primary);
 }

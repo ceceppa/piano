@@ -1,0 +1,79 @@
+/* Legend — design-brief §Legend. One row per marker role the active view uses:
+   a small swatch carrying that marker's own shape and colour, plus its label. */
+
+.legend {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.legend-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.legend-swatch {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border: 1px solid var(--color-outline-variant);
+  border-radius: 0.125rem;
+  background: var(--color-key-white);
+}
+
+.legend-swatch-root {
+  background: var(--color-tertiary);
+}
+
+.legend-swatch-chord-tone,
+.legend-swatch-shared {
+  background: var(--color-secondary);
+}
+
+.legend-swatch-scale-note {
+  background: var(--color-scale-tone-muted);
+}
+
+/* The swatch reuses the keyboard's own marker shapes, at a size that fits it. */
+.legend .key-marker {
+  display: inline-block;
+}
+
+.legend .marker-root {
+  width: 12px;
+  height: 12px;
+  background: var(--color-on-tertiary);
+  clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
+}
+
+.legend .marker-chord-tone {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--color-on-secondary);
+}
+
+.legend .marker-shared {
+  width: 8px;
+  height: 8px;
+  background: var(--color-highlight-teal);
+  clip-path: polygon(100% 0, 100% 100%, 0 100%);
+}
+
+.legend .marker-scale-note {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 2px solid var(--color-highlight-teal);
+}
+
+.legend-label {
+  font: var(--text-body-sm);
+  color: var(--color-on-surface-variant);
+}

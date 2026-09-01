@@ -28,28 +28,6 @@
   }
 }
 
-.chord-title {
-  font: var(--text-headline-lg-mobile);
-}
-
-@media (min-width: 768px) {
-  .chord-title {
-    font: var(--text-headline-xl);
-    letter-spacing: -0.02em;
-  }
-}
-
-/* Slash-chord label + inversion name (design-brief §Header slash-chord label, phase-4). */
-.chord-title .slash-label {
-  font-family: var(--font-mono);
-  font: var(--text-notation-lg);
-}
-
-.chord-title .inversion-name {
-  font: var(--text-body-sm);
-  color: var(--color-on-surface-variant);
-}
-
 .explore {
   flex: 1;
   display: flex;
@@ -63,64 +41,43 @@
   }
 }
 
-.controls-row {
+/* Primary selection row — view, root, and inversion share one visual tier
+   (design-brief §Screen Composition, phase-5 item 2). No card; spacing and
+   grouping carry the hierarchy, and nothing quieter sits between them. */
+.controls-primary {
   display: flex;
   flex-wrap: wrap;
-  gap: 16px;
-  align-items: flex-end;
-}
-
-.controls-row > * {
-  flex: 1 1 240px;
-  min-width: 0;
-}
-
-/* Dominant pair — design-brief §Control area (chord-first hierarchy): larger text, no card. */
-.controls-dominant {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 16px;
-  align-items: flex-end;
+  gap: 16px 24px;
+  align-items: flex-start;
   color: var(--color-on-surface);
 }
 
-.controls-dominant > * {
-  flex: 1 1 240px;
+.controls-primary .view-seg {
+  flex: 0 0 auto;
+}
+
+.controls-primary .root-selector {
+  flex: 1 1 420px;
   min-width: 0;
 }
 
-.controls-dominant .root-seg .seg-option,
-.controls-dominant .field select {
-  font: var(--text-notation-lg);
+.controls-primary .inversion-seg {
+  flex: 0 0 auto;
 }
 
-/* Secondary/context controls — quieter row, no bordered card, spacing carries hierarchy. */
-.controls-secondary {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  padding: 16px;
-  border-radius: 0.5rem;
-  background: var(--color-surface-low);
-  font: var(--text-body-sm);
-  color: var(--color-on-surface-variant);
-}
+/* Narrow screens: inversion drops onto its own row below the root selector
+   rather than compressing either control (phase brief 5a). */
+@media (max-width: 767px) {
+  .controls-primary .root-selector,
+  .controls-primary .inversion-seg {
+    flex: 1 1 100%;
+  }
 
-.controls-secondary .advanced-control {
-  font: var(--text-body-sm);
-}
+  .controls-primary .inversion-seg .seg {
+    overflow-x: auto;
+  }
 
-.controls-secondary .advanced-control summary {
-  font: var(--text-label-mono);
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  color: var(--color-on-surface-variant);
-  cursor: pointer;
-}
-
-.controls-secondary .advanced-control-body {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  margin-top: 16px;
+  .controls-primary .inversion-seg .seg-option {
+    flex: 0 0 auto;
+  }
 }

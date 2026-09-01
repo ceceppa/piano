@@ -13,12 +13,20 @@
   fill: currentColor;
 }
 
+/* Playback status carries text, never colour alone, and says nothing while
+   idle — the old static "Ready" label is gone. */
 .playback-state {
   font: var(--text-label-mono);
   letter-spacing: 0.05em;
   text-transform: uppercase;
   color: var(--color-on-surface-variant);
-  min-width: 4em;
+}
+
+/* The state-summary caption that took the Ready label's place. */
+.playback-summary {
+  font: var(--text-body-sm);
+  color: var(--color-on-surface-variant);
+  margin-left: auto;
 }
 
 @media (max-width: 767px) {
@@ -35,7 +43,7 @@
     z-index: 20;
   }
 
-  .playback-bar .playback-state {
-    margin-left: auto;
+  .playback-bar .playback-summary {
+    display: none;
   }
 }

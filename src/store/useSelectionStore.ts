@@ -1,24 +1,22 @@
 import { create } from 'zustand'
 import type { PitchClass } from '../musicCore'
-import type { GenreId, QualityId, ScaleTypeId, VoicingType } from '../musicCore'
+import type { QualityId, ScaleTypeId, VoicingType } from '../musicCore'
 import { validInversionCount } from '../musicCore'
 
-export type ScaleMode = 'chord-root' | 'key'
 export type ViewMode = 'chord' | 'scale' | 'both'
 export type Theme = 'light' | 'dark'
 
-export interface KeyContext {
-  root: PitchClass
-  scaleType: ScaleTypeId
-}
-
+/**
+ * The whole Explore selection (tech-spec §Data model → Selection). One root
+ * drives both the chord and the scale; `quality`, `scaleType`, and `inversion`
+ * are independent fields that `viewMode` only shows or hides, so a hidden
+ * chord or scale is remembered and returns unchanged when its view does.
+ */
 export interface Selection {
   root: PitchClass
   quality: QualityId
-  key: KeyContext
-  scaleMode: ScaleMode
+  scaleType: ScaleTypeId
   viewMode: ViewMode
-  genre: GenreId
   inversion: number
   voicingType: VoicingType
 }
@@ -36,18 +34,19 @@ interface SelectionState {
   setTheme: (theme: Theme) => void
   setRoot: (root: PitchClass) => void
   setQuality: (quality: QualityId) => void
-  setKeyRoot: (root: PitchClass) => void
-  setKeyScaleType: (scaleType: ScaleTypeId) => void
-  setScaleMode: (scaleMode: ScaleMode) => void
+  setScaleType: (scaleType: ScaleTypeId) => void
   setViewMode: (viewMode: ViewMode) => void
-  setGenre: (genre: GenreId) => void
-  setOctaveRange: (startMidi: number, endMidi: number) => void
   setInversion: (inversion: number) => void
   setVoicingType: (voicingType: VoicingType) => void
 }
 
 const C = 0
 
+/**
+ * Fixed keyboard window (tech-spec §Data model → DisplayRange). There is no
+ * range control any more; the Keyboard relaxes both bounds around the current
+ * voicing itself, so nothing writes these.
+ */
 export const DEFAULT_OCTAVE_RANGE: OctaveRange = { startMidi: 48, endMidi: 83 }
 
 export function getSystemTheme(): Theme {
@@ -62,10 +61,8 @@ export const useSelectionStore = create<SelectionState>((set) => ({
   selection: {
     root: C,
     quality: 'major',
-    key: { root: C, scaleType: 'major' },
-    scaleMode: 'chord-root',
-    viewMode: 'both',
-    genre: 'Any',
+    scaleType: 'major',
+    viewMode: 'chord',
     inversion: 0,
     voicingType: 'close',
   },
@@ -79,15 +76,8 @@ export const useSelectionStore = create<SelectionState>((set) => ({
       const inversion = Math.min(state.selection.inversion, maxInversion)
       return { selection: { ...state.selection, quality, inversion } }
     }),
-  setKeyRoot: (root) =>
-    set((state) => ({ selection: { ...state.selection, key: { ...state.selection.key, root } } })),
-  setKeyScaleType: (scaleType) =>
-    set((state) => ({ selection: { ...state.selection, key: { ...state.selection.key, scaleType } } })),
-  setScaleMode: (scaleMode) =>
-    set((state) => ({ selection: { ...state.selection, scaleMode } })),
+  setScaleType: (scaleType) => set((state) => ({ selection: { ...state.selection, scaleType } })),
   setViewMode: (viewMode) => set((state) => ({ selection: { ...state.selection, viewMode } })),
-  setGenre: (genre) => set((state) => ({ selection: { ...state.selection, genre } })),
-  setOctaveRange: (startMidi, endMidi) => set({ octaveStart: startMidi, octaveEnd: endMidi }),
   setInversion: (inversion) => set((state) => ({ selection: { ...state.selection, inversion } })),
   setVoicingType: (voicingType) => set((state) => ({ selection: { ...state.selection, voicingType } })),
 }))

@@ -1,0 +1,44 @@
+/* Selection summary — design-brief §Screen Composition (phase-5 item 3).
+   The mode-aware title, quiet state chips beneath it in Both view, and the
+   legend on the same row, right-aligned. */
+
+.selection-summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.selection-summary-main {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+
+.selection-title {
+  font: var(--text-headline-lg-mobile);
+}
+
+@media (min-width: 768px) {
+  .selection-title {
+    font: var(--text-headline-xl);
+    letter-spacing: -0.02em;
+  }
+}
+
+.selection-title .slash-label {
+  font: var(--text-notation-lg);
+}
+
+.selection-title .inversion-name {
+  font: var(--text-body-sm);
+  color: var(--color-on-surface-variant);
+}
+
+.selection-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}

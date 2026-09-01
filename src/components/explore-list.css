@@ -1,0 +1,39 @@
+/* Explore chord types / Explore scales — design-brief §Chord-type tile grid and
+   §Scale-type list. Card-less sections: a title, group headings, and the full
+   grid, with no filter row and no See-all control. */
+
+.explore-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.explore-list-title {
+  font: var(--text-headline-lg);
+}
+
+@media (max-width: 767px) {
+  .explore-list-title {
+    font: var(--text-headline-lg-mobile);
+  }
+}
+
+.explore-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.explore-group-title {
+  font: var(--text-label-mono);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--color-on-surface-variant);
+  margin: 0;
+}
+
+.explore-tile-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 8px;
+}

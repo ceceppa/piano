@@ -1,8 +1,8 @@
-export { chordTones, chordName, chordFullName, chordScaleType, isRecommendedForGenre, intervalsFor, variationsFor, QUALITIES, GENRES } from './qualities'
+export { chordTones, sharedTones, qualityById, chordName, chordFullName, chordScaleType, isRecommendedForGenre, intervalsFor, variationsFor, QUALITIES, GENRES } from './qualities'
 export type { ChordQuality, QualityId, Variation, GenreId } from './qualities'
-export { SCALES, scaleTones, scaleLabel } from './scales'
+export { SCALES, SELECTABLE_SCALES, scaleTones, scaleName, scaleLabel, scaleStepPattern } from './scales'
 export type { ScaleType, ScaleTypeId } from './scales'
-export { noteName, PITCH_CLASS_LABELS } from './pitch'
+export { noteName, flatName, PITCH_CLASS_LABELS, PITCH_CLASS_FLAT_LABELS } from './pitch'
 export type { PitchClass } from './pitch'
 export {
   rootPositionVoice,
@@ -11,6 +11,7 @@ export {
   validInversionCount,
   voice,
   inversionName,
+  inversionShortName,
   slashChordLabel,
 } from './voicing'
 export type { ChordRef, VoicingType, VoicedNote } from './voicing'

@@ -54,9 +54,16 @@ function invertedIntervals(chord: ChordRef, inversion: number): number[] {
   return [...offsets.slice(i), ...offsets.slice(0, i).map((o) => o + 12)]
 }
 
+const INVERSION_SHORT_NAMES = ['Root', '1st', '2nd', '3rd', '4th']
+
 /** "Root position", "1st inversion", "2nd inversion", … */
 export function inversionName(inversion: number): string {
   return INVERSION_NAMES[inversion] ?? `${inversion}th inversion`
+}
+
+/** The compact button label: "Root", "1st", "2nd", … */
+export function inversionShortName(inversion: number): string {
+  return INVERSION_SHORT_NAMES[inversion] ?? `${inversion}th`
 }
 
 /** `null` at root position; otherwise `"{chordSymbol}/{bassNote}"` (tech-spec §Voicing algorithms). */

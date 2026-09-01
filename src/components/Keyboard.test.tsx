@@ -1,8 +1,21 @@
 import { act } from 'react'
 import { createRoot, type Root } from 'react-dom/client'
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import Keyboard, { type KeyState } from './Keyboard'
 import { useSelectionStore } from '../store/useSelectionStore'
+import * as audioEngine from '../audioEngine'
+
+vi.mock('../audioEngine', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../audioEngine')>()
+  return {
+    ...actual,
+    init: vi.fn(() => Promise.resolve()),
+    noteOn: vi.fn(),
+    noteOff: vi.fn(),
+    playChord: vi.fn(),
+    playScale: vi.fn(),
+  }
+})
 
 let container: HTMLDivElement
 let root: Root
@@ -26,10 +39,8 @@ function resetStore() {
     selection: {
       root: 0,
       quality: 'major',
-      key: { root: 0, scaleType: 'major' },
-      scaleMode: 'chord-root',
+      scaleType: 'major',
       viewMode: 'both',
-      genre: 'Any',
       inversion: 0,
       voicingType: 'close',
     },
@@ -40,6 +51,7 @@ function resetStore() {
 
 beforeEach(() => {
   resetStore()
+  vi.clearAllMocks()
   container = document.createElement('div')
   document.body.appendChild(container)
   root = createRoot(container)
@@ -65,14 +77,25 @@ describe('Keyboard visualisation', () => {
     expect(states[72]).toBeUndefined() // beyond B4
   })
 
-  it('highlights chord tones strongly, scale notes subtly, root distinctly on the default C major', () => {
+  it('tells the four note roles apart in Both view on the default C major (S4a, E3a)', () => {
     renderKeyboard()
     const states = keyStates()
     expect(states[48]).toBe('root') // C
-    expect(states[52]).toBe('chord-tone') // E
-    expect(states[55]).toBe('chord-tone') // G
-    expect(states[50]).toBe('scale-note') // D
+    // E and G are chord tones that also belong to the C major scale.
+    expect(states[52]).toBe('shared')
+    expect(states[55]).toBe('shared')
+    expect(states[50]).toBe('scale-note') // D — scale only
     expect(states[49]).toBe('plain') // C♯
+  })
+
+  it('marks a chord note outside the scale as chord-only, not shared (S4a, E3a)', () => {
+    act(() => useSelectionStore.getState().setQuality('augmented'))
+    renderKeyboard()
+    const states = keyStates()
+    // C augmented is C · E · G♯; G♯ is not in the C major scale.
+    expect(states[48]).toBe('root')
+    expect(states[52]).toBe('shared')
+    expect(states[56]).toBe('chord-tone') // G♯ — chord only
   })
 
   it('in chord mode highlights only the current voicing’s exact notes, once (S2b+1, phase-4 correction)', () => {
@@ -95,9 +118,10 @@ describe('Keyboard visualisation', () => {
     const scalePcs = new Set([0, 2, 4, 5, 7, 9, 11]) // C major scale
     for (const [midi, state] of Object.entries(states)) {
       const m = Number(midi)
-      // No chord/root marker in scale mode (S4a+1, phase-4 correction) — C3 (48)
-      // reads as a scale note like any other, not the chord root.
-      if (m >= 48 && m <= 59 && scalePcs.has(m % 12)) expect(state).toBe('scale-note')
+      // No chord marker in scale mode (S4a+1, phase-4 correction). The scale's
+      // own root still reads as the root — it is where the band starts.
+      if (m === 48) expect(state).toBe('root')
+      else if (m >= 48 && m <= 59 && scalePcs.has(m % 12)) expect(state).toBe('scale-note')
       else expect(state).toBe('plain') // second octave (60-71): not repeated
     }
   })
@@ -111,23 +135,23 @@ describe('Keyboard visualisation', () => {
     })
     const states = keyStates()
     expect(states[57]).toBe('root') // A3
-    expect(states[60]).toBe('chord-tone') // C
-    expect(states[64]).toBe('chord-tone') // E
-    expect(states[67]).toBe('chord-tone') // G
+    expect(states[60]).toBe('chord-tone') // C — not in the A major scale
+    expect(states[64]).toBe('shared') // E — in both the Am7 chord and A major
+    expect(states[67]).toBe('chord-tone') // G — not in the A major scale
     expect(states[62]).toBe('scale-note') // D, within the A3-G#4 scale band
-    // A m7's chord-root scale is A natural minor (tech-spec §Chord-scale mapping), not
-    // A major — C♯ (49) is outside it either way.
-    expect(states[49]).toBe('plain')
+    // The scale is the chosen one (major) on the shared root A, not one derived
+    // from the chord quality — C♯ is an A major scale tone.
+    expect(states[61]).toBe('scale-note') // C♯4
     // F3 (53) is below the scale band that starts at the first visible A (57);
-    // only its higher octave, F4 (65), is marked (E4b, phase-4).
+    // only its higher octave, F♯4 (66), is marked (E4b, phase-4).
     expect(states[53]).toBe('plain')
-    expect(states[65]).toBe('scale-note') // F4 (A natural minor)
+    expect(states[66]).toBe('scale-note') // F♯4 (A major)
   })
 
-  it('re-lays out keys when the octave range changes', () => {
+  it('re-lays out keys when the window changes', () => {
     renderKeyboard()
     expect(keyStates()[71]).toBeDefined()
-    act(() => useSelectionStore.getState().setOctaveRange(48, 59))
+    act(() => useSelectionStore.setState({ octaveStart: 48, octaveEnd: 59 }))
     const states = keyStates()
     expect(states[60]).toBeUndefined()
     expect(states[59]).toBeDefined()
@@ -139,17 +163,27 @@ describe('Keyboard visualisation', () => {
     expect(key?.getAttribute('aria-label')).toBe('C3')
   })
 
-  it('renders distinct marker shapes and border cues per key state', () => {
+  it('gives each of the four roles its own marker shape, not colour alone (S4a, E3a)', () => {
+    act(() => useSelectionStore.getState().setQuality('augmented'))
     renderKeyboard()
-    const rootKey = container.querySelector<HTMLElement>('[data-state="root"]')
-    const chordKey = container.querySelector<HTMLElement>('[data-state="chord-tone"]')
-    const scaleKey = container.querySelector<HTMLElement>('[data-state="scale-note"]')
-    expect(rootKey?.classList.contains('key-root')).toBe(true)
-    expect(rootKey?.querySelector('.marker-root')).not.toBeNull()
-    expect(chordKey?.classList.contains('key-chord-tone')).toBe(true)
-    expect(chordKey?.querySelector('.marker-chord-tone')).not.toBeNull()
-    expect(scaleKey?.classList.contains('key-scale-note')).toBe(true)
-    expect(scaleKey?.querySelector('.marker-scale-note')).not.toBeNull()
+    // C augmented against C major gives all four roles at once: C root,
+    // E shared, G♯ chord-only, D scale-only.
+    const keyFor = (state: string) => container.querySelector<HTMLElement>(`[data-state="${state}"]`)
+    for (const [state, cls, marker] of [
+      ['root', 'key-root', '.marker-root'],
+      ['chord-tone', 'key-chord-tone', '.marker-chord-tone'],
+      ['shared', 'key-shared', '.marker-shared'],
+      ['scale-note', 'key-scale-note', '.marker-scale-note'],
+    ] as const) {
+      const key = keyFor(state)
+      expect(key, state).not.toBeNull()
+      expect(key?.classList.contains(cls), state).toBe(true)
+      expect(key?.querySelector(marker), state).not.toBeNull()
+    }
+    // Every role's marker is a different shape, so none of the four is told
+    // apart by colour alone.
+    const shapes = ['.marker-root', '.marker-chord-tone', '.marker-shared', '.marker-scale-note']
+    expect(new Set(shapes).size).toBe(4)
     const plainKey = container.querySelector('[data-state="plain"]')
     expect(plainKey?.querySelector('.key-marker')).toBeNull()
   })
@@ -181,7 +215,7 @@ describe('Keyboard visualisation', () => {
       [48, 59],
       [60, 71],
     ] as const) {
-      act(() => useSelectionStore.getState().setOctaveRange(start, end))
+      act(() => useSelectionStore.setState({ octaveStart: start, octaveEnd: end }))
       renderKeyboard()
       const blacks = [...container.querySelectorAll<HTMLElement>('.key-black')]
       const whites = container.querySelectorAll('.key-white').length
@@ -212,9 +246,10 @@ describe('Keyboard default range covers voiced notes (phase-4 correction, S3a+1)
       })),
     )
     renderKeyboard()
-    // B add9 close voicing includes C♯ at midi 73 — outside the old 48–71 default,
-    // inside the new 48–83 (3-octave) default.
-    expect(container.querySelector<HTMLElement>('[data-midi="73"]')?.dataset.state).toBe('chord-tone')
+    // B add9 close voicing includes C♯ at midi 73 — outside the old 48–71 window,
+    // inside the fixed 48–83 one. C♯ is also in the B major scale, so it reads
+    // as shared in Both view.
+    expect(container.querySelector<HTMLElement>('[data-midi="73"]')?.dataset.state).toBe('shared')
   })
 })
 
@@ -319,5 +354,41 @@ describe('No chord elements in scale view (phase-4 correction, S4a+1)', () => {
     expect(container.querySelector<HTMLElement>('[data-midi="48"]')?.dataset.bass).toBeUndefined()
     act(() => useSelectionStore.getState().setViewMode('both'))
     expect(container.querySelector<HTMLElement>('[data-midi="48"]')?.dataset.bass).toBe('true')
+  })
+})
+describe('Keyboard single-note play (S4d, E5c)', () => {
+  it('sounds the tapped note alone and changes nothing about the selection', async () => {
+    renderKeyboard()
+    const before = { ...useSelectionStore.getState().selection }
+    const key = container.querySelector<HTMLElement>('[data-midi="50"]')! // D3, a scale note
+
+    await act(async () => {
+      key.dispatchEvent(new MouseEvent('pointerdown', { bubbles: true }))
+    })
+    expect(audioEngine.noteOn).toHaveBeenCalledTimes(1)
+    expect(audioEngine.noteOn).toHaveBeenCalledWith(50)
+    // Only that one note — no chord or scale playback rides along with it.
+    expect(audioEngine.playChord).not.toHaveBeenCalled()
+    expect(audioEngine.playScale).not.toHaveBeenCalled()
+
+    await act(async () => {
+      key.dispatchEvent(new MouseEvent('pointerup', { bubbles: true }))
+    })
+    expect(audioEngine.noteOff).toHaveBeenCalledWith(50)
+
+    expect(useSelectionStore.getState().selection).toEqual(before)
+    // The key keeps the overlay role it had before it was pressed.
+    expect(container.querySelector<HTMLElement>('[data-midi="50"]')!.dataset.state).toBe('scale-note')
+  })
+
+  it('plays a note from the keyboard too, without touching the selection', async () => {
+    renderKeyboard()
+    const before = { ...useSelectionStore.getState().selection }
+    const key = container.querySelector<HTMLElement>('[data-midi="52"]')!
+    await act(async () => {
+      key.dispatchEvent(new KeyboardEvent('keydown', { key: ' ', bubbles: true }))
+    })
+    expect(audioEngine.noteOn).toHaveBeenCalledWith(52)
+    expect(useSelectionStore.getState().selection).toEqual(before)
   })
 })

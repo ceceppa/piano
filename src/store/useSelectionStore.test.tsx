@@ -13,10 +13,8 @@ beforeEach(() => {
     selection: {
       root: 0,
       quality: 'major',
-      key: { root: 0, scaleType: 'major' },
-      scaleMode: 'chord-root',
+      scaleType: 'major',
       viewMode: 'both',
-      genre: 'Any',
       inversion: 0,
       voicingType: 'close',
     },
@@ -40,10 +38,8 @@ export function storeSnapshot() {
     theme: s.theme,
     root: s.selection.root,
     quality: s.selection.quality,
-    key: s.selection.key,
-    scaleMode: s.selection.scaleMode,
+    scaleType: s.selection.scaleType,
     viewMode: s.selection.viewMode,
-    genre: s.selection.genre,
     inversion: s.selection.inversion,
     voicingType: s.selection.voicingType,
     octaveStart: s.octaveStart,
@@ -67,16 +63,16 @@ describe('useSelectionStore defaults', () => {
     expect(getSystemTheme()).toBe('light')
   })
 
-  it('initialises to C major with no interaction', () => {
-    const snap = storeSnapshot()
-    expect(snap.root).toBe(0)
-    expect(snap.quality).toBe('major')
-    expect(snap.key).toEqual({ root: 0, scaleType: 'major' })
-    expect(snap.scaleMode).toBe('chord-root')
-    expect(snap.viewMode).toBe('both')
-    expect(snap.genre).toBe('Any')
-    expect(snap.inversion).toBe(0)
-    expect(snap.voicingType).toBe('close')
+  it('initialises to a C major chord in Chord view with no interaction', () => {
+    // Read the store's own initial state, not the fixture beforeEach installs:
+    // this default is what the app shows on first load with nothing saved.
+    const initial = useSelectionStore.getInitialState().selection
+    expect(initial.root).toBe(0)
+    expect(initial.quality).toBe('major')
+    expect(initial.scaleType).toBe('major')
+    expect(initial.viewMode).toBe('chord')
+    expect(initial.inversion).toBe(0)
+    expect(initial.voicingType).toBe('close')
   })
 
   it('defaults the octave range to three octaves from C3 (48–83)', () => {
@@ -106,23 +102,30 @@ describe('selection store actions', () => {
     expect(snap.quality).toBe('maj7')
   })
 
-  it('exposes action updates for key, scaleMode, viewMode, and octaveRange', () => {
+  it('exposes action updates for scaleType and viewMode', () => {
     const s = useSelectionStore.getState()
     act(() => {
-      s.setKeyRoot(5)
-      s.setKeyScaleType('naturalMinor')
-      s.setScaleMode('key')
+      s.setScaleType('naturalMinor')
       s.setViewMode('scale')
-      s.setGenre('Blues')
-      s.setOctaveRange(36, 47)
     })
     const snap = storeSnapshot()
-    expect(snap.key).toEqual({ root: 5, scaleType: 'naturalMinor' })
-    expect(snap.scaleMode).toBe('key')
+    expect(snap.scaleType).toBe('naturalMinor')
     expect(snap.viewMode).toBe('scale')
-    expect(snap.genre).toBe('Blues')
-    expect(snap.octaveStart).toBe(36)
-    expect(snap.octaveEnd).toBe(47)
+  })
+
+  it('keeps the chord, inversion, and scale while the view changes around them', () => {
+    const s = useSelectionStore.getState()
+    act(() => {
+      s.setQuality('maj7')
+      s.setInversion(2)
+      s.setScaleType('naturalMinor')
+    })
+    act(() => useSelectionStore.getState().setViewMode('scale'))
+    act(() => useSelectionStore.getState().setViewMode('chord'))
+    const snap = storeSnapshot()
+    expect(snap.quality).toBe('maj7')
+    expect(snap.inversion).toBe(2)
+    expect(snap.scaleType).toBe('naturalMinor')
   })
 
   it('setInversion and setVoicingType update the selection independently', () => {
