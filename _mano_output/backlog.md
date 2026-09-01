@@ -576,3 +576,10 @@
   Key/mode shipped in phase-1 and is unavailable anywhere until a later screen brings it back.
   The redesign reference (ui/newui.md) places key, mode and genre context on the future Progressions screen.
 - **Status:** backlog
+
+### Highlight the keyboard key(s) currently sounding during chord/scale playback
+- **Type:** feature
+- **Source:** phase-5
+- **Context:**
+  "when I play a chord or a scale they key(s) played on the keyboard needs to be highlighted" — playback (chord/scale/arpeggio) currently only makes sound; it doesn't light up the key(s) actually sounding at each moment, distinct from the existing static selection markers.
+- **Status:** backlog
