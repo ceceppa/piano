@@ -13,6 +13,7 @@
 | S2b | Chord inversions — Inversion display | done |
 | S2b+1 | the chord needs to only be shown once in the middle section | done |
 | S2b+2 | Chord notes should be shown the order of the inversion selected | done |
+| S2b+3 | we need to higlight the whole key in an accessible way. Just dots do or… | done |
 | S2c | Chord inversions — Inversion playback | done |
 | S3a | Chord voicings — Voicing selection | done |
 | S3a+1 | Let's make showing 3 octave by default | done |
@@ -59,6 +60,13 @@ affects: E2b+1
 
 ```text
 Chord notes should be shown the order of the inversion selected
+```
+
+### S2b+3
+affects: E2b
+
+```text
+we need to higlight the whole key in an accessible way. Just dots do or border aren't enoguhg
 ```
 
 ### S3a+1

@@ -127,18 +127,23 @@
     position: absolute; top: 0; height: 108px; width: 22.67px;
     background: var(--color-key-black); border-radius: 0 0 3px 3px; z-index: 2;
   }
+  /* Whole-key fill (phase-4 revision): root/chord-tone highlight the entire
+     key, not just a border or a small marker — see design-brief §Markers. */
+  .key.root { background: var(--color-tertiary) !important; }
+  .key.tone { background: var(--color-secondary) !important; }
   .marker { position: absolute; left: 50%; transform: translateX(-50%); }
   .marker.root {
-    width: 18px; height: 18px; bottom: 14px; background: var(--color-tertiary);
-    border: 2px solid #4E3D00; transform: translateX(-50%) rotate(45deg);
+    width: 18px; height: 18px; bottom: 14px; background: var(--color-on-tertiary);
+    transform: translateX(-50%) rotate(45deg);
   }
   .marker.tone {
-    width: 12px; height: 12px; border-radius: 50%; bottom: 16px; background: var(--color-secondary);
+    width: 12px; height: 12px; border-radius: 50%; bottom: 16px; background: var(--color-on-secondary);
   }
   .bass-bar {
     position: absolute; left: 2px; right: 2px; bottom: 0; height: 4px;
     background: var(--color-primary); border-radius: 2px 2px 0 0;
   }
+  .bass-bar.on-fill { background: var(--color-on-primary); }
 
   .notes-panel {
     background: var(--color-surface); border: 1px solid var(--color-outline-variant);
@@ -271,10 +276,12 @@
     }
 
     if (pc === rootPc) {
+      el.className += ' root';
       var d = document.createElement('div');
       d.className = 'marker root';
       el.appendChild(d);
     } else if (chordTonePcs.indexOf(pc) !== -1) {
+      el.className += ' tone';
       var t = document.createElement('div');
       t.className = 'marker tone';
       el.appendChild(t);
@@ -282,7 +289,11 @@
 
     if (midi === bassMidi) {
       var b = document.createElement('div');
-      b.className = 'bass-bar';
+      // On a filled root/chord-tone key, the on-primary pair keeps ≥3:1
+      // against both fills; only an unfilled key uses the primary bar
+      // (design-brief §Piano Keyboard, Bass marker colour rule).
+      var onFill = el.className.indexOf(' root') !== -1 || el.className.indexOf(' tone') !== -1;
+      b.className = 'bass-bar' + (onFill ? ' on-fill' : '');
       el.appendChild(b);
     }
 

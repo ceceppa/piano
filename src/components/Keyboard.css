@@ -78,9 +78,11 @@
   transform: translateX(-50%);
 }
 
-/* Non-colour distinction: highlighted states pair colour with marker shape + border. */
+/* Non-colour distinction: highlighted states pair colour with marker shape.
+   Root/chord-tone fill the whole key (S2b+3, phase-4 correction) — a border
+   or a small marker alone read as too subtle. */
 .key-chord-tone {
-  border-color: var(--color-secondary);
+  background: var(--color-secondary);
 }
 
 .key-scale-note {
@@ -88,8 +90,7 @@
 }
 
 .key-root {
-  border: 3px double var(--color-secondary);
-  box-shadow: inset 0 0 0 1px var(--color-secondary);
+  background: var(--color-tertiary);
 }
 
 /* Pressed/active keys — design's active tint with inset shadow. */
@@ -108,6 +109,16 @@
   color: var(--color-on-surface);
 }
 
+/* Filled root/chord-tone keys override the base/black key-face colour above
+   regardless of white/black, so the label stays legible on the new fill. */
+.key-root .key-face {
+  color: var(--color-on-tertiary);
+}
+
+.key-chord-tone .key-face {
+  color: var(--color-on-secondary);
+}
+
 /* Markers — shapes from design-preview (dot / diamond / ring), not colour alone. */
 .key-marker {
   display: inline-block;
@@ -116,7 +127,7 @@
 .key .marker-root {
   width: 18px;
   height: 18px;
-  background: var(--color-tertiary);
+  background: var(--color-on-tertiary);
   clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
   filter: drop-shadow(0 0 0 2px var(--color-marker-stroke));
 }
@@ -125,7 +136,7 @@
   width: 12px;
   height: 12px;
   border-radius: 50%;
-  background: var(--color-secondary);
+  background: var(--color-on-secondary);
 }
 
 .key .marker-scale-note {
@@ -166,6 +177,14 @@
 }
 
 .key-black .marker-bass {
+  background: var(--color-on-primary);
+}
+
+/* On a filled root/chord-tone key, --color-primary fails 3:1 against the new
+   --color-secondary fill (2.8:1) — --color-on-primary passes against both
+   fills in both themes (design-brief §Piano Keyboard, Bass marker colour rule). */
+.key-root .marker-bass,
+.key-chord-tone .marker-bass {
   background: var(--color-on-primary);
 }
 
