@@ -40,13 +40,21 @@ node _mano/scripts/scaffold.js run --name piano-chord-explorer -- npm create vit
 | Entity | Fields | Notes |
 |--------|--------|-------|
 | PitchClass | `value` 0–11 (C=0 … B=11), `label` ("C"…"B", sharps for accidentals) | §6.1: all 12 chromatic roots selectable |
-| ChordQuality | `id`, `intervals: number[]` (semitones), `suffix`, `name: string` (full readable name), `genreGuide: string[]`, `genres: GenreId[]` | catalogue = major, minor, diminished, augmented, sus2, sus4, 6, 7, maj7, m7, 9, add9. `name` and `genres` are additive fields on the existing 12 entries — no id/interval/suffix changes — so they don't trip the phase brief's "no changes to predefined catalogues" line; see the table below for exact values. |
+| ChordQuality | `id`, `formula: IntervalFormula[]` (scale-degree notation, e.g. `1, b3, 5`; see §Interval formula notation), `suffix`, `name: string` (full readable name), `genreGuide: string[]`, `genres: GenreId[]` | catalogue = major, minor, diminished, augmented, sus2, sus4, 6, 7, maj7, m7, 9, add9. `name` and `genres` are additive fields on the existing 12 entries — no id/formula/suffix changes — so they don't trip the phase brief's "no changes to predefined catalogues" line; see the table below for exact values. |
 | GenreId | `'Any' \| 'Pop' \| 'Rock' \| 'Jazz' \| 'Blues' \| 'Classical'` | canonical genre catalogue; single source for the genre selector's options and for `ChordQuality.genres` matching — replaces the string literal previously local to the selector component |
-| ScaleType | `major`, `naturalMinor`, `augmented`, `locrian`, `mixolydian`; each with `intervals` | full catalogue in §Scale catalogue below — `augmented`/`locrian`/`mixolydian` are new this phase, so every `ChordQuality` has a scale that actually contains its own chord tones |
-| KeyContext | `root: PitchClass`, `scaleType: 'major' \| 'naturalMinor'` | the optional key/mode advanced control keeps its existing two-option range unchanged — the three new scale types are chord-driven only (§Chord-scale mapping), never user-selectable here |
+| ScaleType | `major`, `naturalMinor`, `augmented`, `locrian`, `mixolydian`, `diminished`; each with `formula: IntervalFormula[]` (see §Interval formula notation) | full catalogue in §Scale catalogue below; every `ChordQuality` has a scale that actually contains its own chord tones (§Chord-scale mapping). `locrian` and `diminished` are two distinct 7-note/8-note scales, never the same entry — see §Chord-scale mapping |
+| KeyContext | `root: PitchClass`, `scaleType: 'major' \| 'naturalMinor'` | the optional key/mode advanced control keeps its existing two-option range unchanged — `augmented`/`locrian`/`mixolydian`/`diminished` are chord-driven only (§Chord-scale mapping), never user-selectable here |
 | Selection | `root`, `quality`, `key: KeyContext`, `scaleMode: 'chord-root'\|'key'`, `viewMode: 'chord'\|'scale'\|'both'`, `genre: GenreId` | default: C major, scaleMode `chord-root`, viewMode `both`, genre `Any` |
 | Voicing | `baseMidi: number[]`, `inversion: number` | Phase 1 always root-position close voicing (`inversion: 0`); concept reserved so later voicings/inversions extend, not rework |
 | DisplayRange | `startMidi`, `endMidi` | default 2 octaves from C3 (48–71); selectable so keys stay usable on mobile |
+
+**Interval formula notation.** `ChordQuality.formula` and `ScaleType.formula` both use the standard scale-degree formula, not raw semitone counts: `"1"` is the root, degrees `2`–`7` and `9` are counted on the major scale, and a single leading `b` or `#` marks a degree lowered or raised one semitone from its major-scale position (e.g. minor triad = `1, b3, 5`; dominant 7th = `1, 3, 5, b7`). This is the convention most theory references and musicians already use, and it reads as self-checking — a wrong degree or missing accidental is visible on sight, unlike a raw semitone array.
+
+| Degree | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 9 |
+|---|---|---|---|---|---|---|---|---|
+| Semitones from root | 0 | 2 | 4 | 5 | 7 | 9 | 11 | 14 |
+
+`degreeToSemitone(token: IntervalFormula)` looks up the bare degree in the table above, then applies −1 per leading `b` or +1 per leading `#`; `chordTones`/`scaleTones` sum the result with the root, mod 12. An unrecognised degree or accidental throws, matching `intervalsFor`'s existing unknown-id behaviour.
 
 **Chord quality — `name` and `genres` values (this phase).** `name` is the full readable word(s) used in the screen title (e.g. root "A" + name "diminished" → "A diminished"). `genres` is the structured tag set `isRecommendedForGenre` reads; it replaces parsing the free-text `genreGuide`, and an empty list is a valid outcome — that quality simply never shows a "Recommended" cue.
 
@@ -65,13 +73,16 @@ node _mano/scripts/scaffold.js run --name piano-chord-explorer -- npm create vit
 | 9 | dominant ninth | `[Jazz]` |
 | add9 | added ninth | `[]` |
 
-**Scale catalogue — new intervals (phase-3).** `augmented`, `locrian`, and `mixolydian` join the existing `major`/`naturalMinor` to fix the phase-2 bug: chord-root mode always showed the major scale regardless of quality, which produced correct markers only by accident for major-family chords.
+**Scale catalogue.** Every catalogue scale, in the notation from §Interval formula notation:
 
-| id | intervals (semitones from root) |
+| id | formula |
 |---|---|
-| augmented | `[0, 3, 4, 7, 8, 11]` |
-| locrian | `[0, 1, 3, 5, 6, 8, 10]` |
-| mixolydian | `[0, 2, 4, 5, 7, 9, 10]` |
+| major | `1, 2, 3, 4, 5, 6, 7` |
+| naturalMinor | `1, 2, b3, 4, 5, b6, b7` |
+| augmented | `1, b3, 3, 5, #5, 7` |
+| locrian | `1, b2, b3, 4, b5, b6, b7` |
+| mixolydian | `1, 2, 3, 4, 5, 6, b7` |
+| diminished | `1, 2, b3, 4, b5, b6, 6, 7` |
 
 **Chord-scale mapping (chord-root mode only).** `chordScaleType(quality)` returns the one `ScaleTypeId` whose scale contains every one of that quality's own chord tones on the same root — this *is* "the correct theoretical scale" the phase brief's Exit Criteria test. It applies only when `Selection.scaleMode === 'chord-root'`; in `'key'` mode the scale stays `KeyContext.scaleType`, unchanged and still limited to `major`/`naturalMinor`.
 
@@ -79,7 +90,7 @@ node _mano/scripts/scaffold.js run --name piano-chord-explorer -- npm create vit
 |---|---|---|
 | major, sus2, sus4, 6, maj7, add9 | major | major third or no third; every chord tone is diatonic to major |
 | minor, m7 | naturalMinor | minor third with a natural (not flattened) seventh; every chord tone is diatonic to natural minor |
-| diminished | locrian | the standard chord-scale for a diminished triad (built on the 7th degree of a major key); the only catalogue scale containing the diminished 5th alongside the minor 3rd |
+| diminished | diminished | the 8-note diminished (whole-half octatonic) scale is the conventional chord-scale for a diminished quality and contains the triad's own `1, b3, b5`. `locrian` (the unrelated 7-note mode built on the major scale's 7th degree) also contains those three tones but is a different scale in its own right — it stays in the catalogue as `locrian`, not as this mapping's target |
 | augmented | augmented | neither major (no ♯5) nor natural minor (no major 3rd) contains `{root, 3rd, ♯5}`; the augmented (symmetric hexatonic) scale does — confirmed against the phase-2 backlog's recorded correct notes for C augmented (`C, D♯, E, G, G♯, B`) |
 | 7, 9 | mixolydian | dominant (flattened-7th) chords; `major` has a natural 7th so cannot contain the chord's own ♭7 |
 
@@ -87,8 +98,8 @@ node _mano/scripts/scaffold.js run --name piano-chord-explorer -- npm create vit
 
 | Surface | Exact operation | Inputs & defaults | Result / failure | Canonical mapping / ownership |
 |---------|-----------------|-------------------|------------------|-------------------------------|
-| `musicCore` | `chordTones(root: PitchClass, quality: ChordQuality)` | — | `PitchClass[]`; unknown quality → throws | `quality.intervals` applied mod 12 |
-| `musicCore` | `scaleTones(root: PitchClass, scaleType: ScaleType = 'major')\|)` | — | `PitchClass[]` | `scaleType.intervals` applied mod 12 |
+| `musicCore` | `chordTones(root: PitchClass, quality: ChordQuality)` | — | `PitchClass[]`; unknown quality → throws | `quality.formula` parsed via `degreeToSemitone` (§Interval formula notation), summed with root, mod 12 |
+| `musicCore` | `scaleTones(root: PitchClass, scaleType: ScaleType = 'major')\|)` | — | `PitchClass[]` | `scaleType.formula` parsed via `degreeToSemitone`, summed with root, mod 12 |
 | `musicCore` | `chordScaleType(quality: ChordQuality)` | — | `ScaleTypeId` | pure lookup, canonical mapping in §Chord-scale mapping; used only in `chord-root` mode — `key` mode keeps reading `KeyContext.scaleType` directly |
 | `musicCore` | `rootPositionVoice(chord)` | `chord: {root, quality}` | `number[]` MIDI notes in a default band around C3 | `chordTones` octave-shifted; always `inversion: 0` |
 | `musicCore` | `variationsFor(root, currentQuality)` | — | `{quality, name, genreGuide}[]` in catalogue order, excluding `currentQuality` | `ChordQuality` catalogue filtered |

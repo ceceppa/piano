@@ -1,24 +1,27 @@
 import type { PitchClass } from './pitch'
 import { noteName } from './pitch'
+import type { IntervalFormula } from './formula'
+import { degreeToSemitone } from './formula'
 
-export type ScaleTypeId = 'major' | 'naturalMinor' | 'augmented' | 'locrian' | 'mixolydian'
+export type ScaleTypeId = 'major' | 'naturalMinor' | 'augmented' | 'locrian' | 'mixolydian' | 'diminished'
 
 export interface ScaleType {
   id: ScaleTypeId
-  /** Semitone intervals from the root, canonical in tech-spec §Data model. */
-  intervals: readonly number[]
+  /** Scale-degree formula from the root, canonical in tech-spec §Interval formula notation. */
+  formula: readonly IntervalFormula[]
 }
 
 export const SCALES: Record<ScaleTypeId, ScaleType> = {
-  major: { id: 'major', intervals: [0, 2, 4, 5, 7, 9, 11] },
-  naturalMinor: { id: 'naturalMinor', intervals: [0, 2, 3, 5, 7, 8, 10] },
-  augmented: { id: 'augmented', intervals: [0, 3, 4, 7, 8, 11] },
-  locrian: { id: 'locrian', intervals: [0, 1, 3, 5, 6, 8, 10] },
-  mixolydian: { id: 'mixolydian', intervals: [0, 2, 4, 5, 7, 9, 10] },
+  major: { id: 'major', formula: ['1', '2', '3', '4', '5', '6', '7'] },
+  naturalMinor: { id: 'naturalMinor', formula: ['1', '2', 'b3', '4', '5', 'b6', 'b7'] },
+  augmented: { id: 'augmented', formula: ['1', 'b3', '3', '5', '#5', '7'] },
+  locrian: { id: 'locrian', formula: ['1', 'b2', 'b3', '4', 'b5', 'b6', 'b7'] },
+  mixolydian: { id: 'mixolydian', formula: ['1', '2', '3', '4', '5', '6', 'b7'] },
+  diminished: { id: 'diminished', formula: ['1', '2', 'b3', '4', 'b5', 'b6', '6', '7'] },
 }
 
 export function scaleTones(root: PitchClass, scaleType: ScaleTypeId = 'major'): PitchClass[] {
-  return SCALES[scaleType].intervals.map((semi) => (root + semi) % 12)
+  return SCALES[scaleType].formula.map(degreeToSemitone).map((semi) => (root + semi) % 12)
 }
 
 export function scaleLabel(root: PitchClass, scaleType: ScaleTypeId): string {

@@ -116,7 +116,7 @@ describe('chordScaleType', () => {
     const expected: Record<string, string> = {
       major: 'major', sus2: 'major', sus4: 'major', '6': 'major', maj7: 'major', add9: 'major',
       minor: 'naturalMinor', m7: 'naturalMinor',
-      diminished: 'locrian',
+      diminished: 'diminished',
       augmented: 'augmented',
       '7': 'mixolydian', '9': 'mixolydian',
     }

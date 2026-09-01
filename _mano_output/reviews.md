@@ -82,3 +82,47 @@
 - [refinement] Revisit overall Explore screen UI clarity — layout works, but still feels a bit confusing; deferred to a later pass.
 - [feature] Show chord and scale notes beneath the keyboard — a notes panel would be easier to reference than reading markers off the keyboard.
 - [refinement] Place keyboard directly under the root-note selector — raised while confirming the phase's chord-first-layout decision.
+
+---
+
+## Phase 3 Review — Sep 1 2026
+
+### Validation
+
+- **Result:** All Exit Criteria confirmed met. Two issues surfaced: scale-tone markers repeat identically across every keyboard section, and the notes panel still shows the chord's notes when View mode is set to scale.
+
+### Phase checks
+
+| # | Phase promise | Result | What happened |
+|---|---|---|---|
+| E1a | Correct chord scales — Select the previously wrong chord (C augmented): the keyboard's scale markers show the correct notes | passed | Confirmed. |
+| E1b | Correct chord scales — Select several other chord qualities across different roots: the scale shown matches the correct theoretical scale for each | passed | Confirmed — pairings are correct across the catalogue. |
+| E2a | Scale legibility — Select a chord with scale notes shown: the scale-tone markers are visually distinguishable from the root marker and from unmarked keys, without relying on colour alone | passed | Distinguishable, but the markers repeat identically across every keyboard section, which reads as confusing (see Backlog changes). |
+| E3a | Notes panel — Select a chord: a panel beneath the keyboard lists the chord's notes | passed | Confirmed. |
+| E3b | Notes panel — Set View mode to include the scale: the panel also lists the scale's notes | failed | Panel still shows the chord's notes when View mode is scale; human wants scale notes only in that mode. |
+| E3c | Notes panel — Set View mode to chord-only: the panel shows only the chord's notes | passed | Confirmed. |
+| E4a | Layout — Open Explore: the keyboard sits directly beneath the root-note selector, with the chord-quality selector still inline next to the root selector | passed | Confirmed. |
+
+### Questions
+
+| # | Question | Answer |
+|---|---|---|
+| Q1 | Are chord/scale pairings now correct across the catalogue, not just the previously reported case? | Yes. |
+| Q2 | Is the scale-note marker distinguishable enough to read at a glance? | Yes, but it repeats across all sections and is confusing — wants it shown once, starting from the scale's first visible root. |
+
+### Decision
+
+- **Choice:** Nothing to decide.
+
+### Assumptions
+
+| # | Assumption | Result | What showed this |
+|---|-----------|---------|------------------------|
+| A1 | The existing View mode option is the only thing that determines whether scale notes appear in the new notes panel. | accepted | Not directly ruled on; the phase shipped on it and was closed. |
+
+### Backlog changes
+
+- [refinement] Scale markers repeat across every keyboard section — reads as confusing; show once, from the scale's first visible root.
+- [bug] Scale-only view still shows chord notes — user wants only the scale's notes when View mode is scale.
+- [spec-gap] Open decision: canonical chord-to-scale mapping formulas — tech spec should state the canonical mapping formulas, including the locrian scale.
+- [spec-gap] Open decision: diminished chord-scale mapping — tech spec should state the diminished chord's scale mapping and include the diminished scale.

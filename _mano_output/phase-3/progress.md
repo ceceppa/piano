@@ -23,3 +23,28 @@
 | E3b | Notes panel — Set View mode to include the scale: the panel also lists the scale's notes | met |
 | E3c | Notes panel — Set View mode to chord-only: the panel shows only the chord's notes | met |
 | E4a | Layout — Open Explore: the keyboard sits directly beneath the root-note selector, with the chord-quality selector still inline next to the root selector | met |
+
+## Rework
+
+| # | Finding | Status |
+|---|---------|--------|
+| R1 | we need to update the code using the correct updated formulas and also… | resolved |
+| R2 | sync diminished chord-scale mapping and add the diminished scale | resolved |
+| R3 | Q2 - yes, but I'd show the scale ones tho. Now it repeats across all th… | pending |
+| R4 | Actually one exit criteria E3b — partially met: when I select "scale" I… | pending |
+
+## Row Contracts
+
+### R1
+source: build
+
+```text
+we need to update the code using the correct updated formulas and also adding locrian scale as we mixed them before
+```
+
+### R2
+source: build
+
+```text
+sync diminished chord-scale mapping and add the diminished scale
+```

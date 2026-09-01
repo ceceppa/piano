@@ -1,6 +1,8 @@
 import type { PitchClass } from './pitch'
 import { noteName } from './pitch'
 import type { ScaleTypeId } from './scales'
+import type { IntervalFormula } from './formula'
+import { degreeToSemitone } from './formula'
 
 export type QualityId =
   | 'major'
@@ -23,8 +25,8 @@ export const GENRES: readonly GenreId[] = ['Any', 'Pop', 'Rock', 'Jazz', 'Blues'
 
 export interface ChordQuality {
   id: QualityId
-  /** Semitone intervals from the root, canonical in tech-spec §Data model. */
-  intervals: readonly number[]
+  /** Scale-degree formula from the root, canonical in tech-spec §Interval formula notation. */
+  formula: readonly IntervalFormula[]
   /** Symbol suffix appended to the root label, e.g. major -> "" (plain root). */
   suffix: string
   /** Full readable word(s) for the screen title, e.g. "diminished" -> "A diminished". */
@@ -37,18 +39,18 @@ export interface ChordQuality {
 
 /** Catalogue order is normative (variationsFor, selectors, variation panel). */
 export const QUALITIES: readonly ChordQuality[] = [
-  { id: 'major', intervals: [0, 4, 7], suffix: '', name: 'major', genreGuide: ['The most common chord in music'], genres: [] },
-  { id: 'minor', intervals: [0, 3, 7], suffix: 'm', name: 'minor', genreGuide: ['Common in pop and rock'], genres: ['Pop', 'Rock'] },
-  { id: 'diminished', intervals: [0, 3, 6], suffix: 'dim', name: 'diminished', genreGuide: ['A jazz and film-music tension chord'], genres: ['Jazz'] },
-  { id: 'augmented', intervals: [0, 4, 8], suffix: 'aug', name: 'augmented', genreGuide: ['Used for colour and suspense'], genres: [] },
-  { id: 'sus2', intervals: [0, 2, 7], suffix: 'sus2', name: 'suspended 2nd', genreGuide: ['Common in rock and ambient music'], genres: ['Rock'] },
-  { id: 'sus4', intervals: [0, 5, 7], suffix: 'sus4', name: 'suspended 4th', genreGuide: ['Common in rock and folk'], genres: ['Rock'] },
-  { id: '6', intervals: [0, 4, 7, 9], suffix: '6', name: 'sixth', genreGuide: ['A jazz and swing favourite'], genres: ['Jazz'] },
-  { id: '7', intervals: [0, 4, 7, 10], suffix: '7', name: 'dominant seventh', genreGuide: ['The blues staple'], genres: ['Blues'] },
-  { id: 'maj7', intervals: [0, 4, 7, 11], suffix: 'maj7', name: 'major seventh', genreGuide: ['A jazz favourite'], genres: ['Jazz'] },
-  { id: 'm7', intervals: [0, 3, 7, 10], suffix: 'm7', name: 'minor seventh', genreGuide: ['Common in jazz and neo-soul'], genres: ['Jazz'] },
-  { id: '9', intervals: [0, 4, 7, 10, 14], suffix: '9', name: 'dominant ninth', genreGuide: ['Popular in jazz and R&B'], genres: ['Jazz'] },
-  { id: 'add9', intervals: [0, 4, 7, 14], suffix: 'add9', name: 'added ninth', genreGuide: ['A soft, modern colour'], genres: [] },
+  { id: 'major', formula: ['1', '3', '5'], suffix: '', name: 'major', genreGuide: ['The most common chord in music'], genres: [] },
+  { id: 'minor', formula: ['1', 'b3', '5'], suffix: 'm', name: 'minor', genreGuide: ['Common in pop and rock'], genres: ['Pop', 'Rock'] },
+  { id: 'diminished', formula: ['1', 'b3', 'b5'], suffix: 'dim', name: 'diminished', genreGuide: ['A jazz and film-music tension chord'], genres: ['Jazz'] },
+  { id: 'augmented', formula: ['1', '3', '#5'], suffix: 'aug', name: 'augmented', genreGuide: ['Used for colour and suspense'], genres: [] },
+  { id: 'sus2', formula: ['1', '2', '5'], suffix: 'sus2', name: 'suspended 2nd', genreGuide: ['Common in rock and ambient music'], genres: ['Rock'] },
+  { id: 'sus4', formula: ['1', '4', '5'], suffix: 'sus4', name: 'suspended 4th', genreGuide: ['Common in rock and folk'], genres: ['Rock'] },
+  { id: '6', formula: ['1', '3', '5', '6'], suffix: '6', name: 'sixth', genreGuide: ['A jazz and swing favourite'], genres: ['Jazz'] },
+  { id: '7', formula: ['1', '3', '5', 'b7'], suffix: '7', name: 'dominant seventh', genreGuide: ['The blues staple'], genres: ['Blues'] },
+  { id: 'maj7', formula: ['1', '3', '5', '7'], suffix: 'maj7', name: 'major seventh', genreGuide: ['A jazz favourite'], genres: ['Jazz'] },
+  { id: 'm7', formula: ['1', 'b3', '5', 'b7'], suffix: 'm7', name: 'minor seventh', genreGuide: ['Common in jazz and neo-soul'], genres: ['Jazz'] },
+  { id: '9', formula: ['1', '3', '5', 'b7', '9'], suffix: '9', name: 'dominant ninth', genreGuide: ['Popular in jazz and R&B'], genres: ['Jazz'] },
+  { id: 'add9', formula: ['1', '3', '5', '9'], suffix: 'add9', name: 'added ninth', genreGuide: ['A soft, modern colour'], genres: [] },
 ]
 
 const QUALITY_BY_ID: Readonly<Record<QualityId, ChordQuality>> = Object.fromEntries(
@@ -58,7 +60,7 @@ const QUALITY_BY_ID: Readonly<Record<QualityId, ChordQuality>> = Object.fromEntr
 export function intervalsFor(quality: QualityId): readonly number[] {
   const q = QUALITY_BY_ID[quality]
   if (!q) throw new Error(`unknown chord quality: ${String(quality)}`)
-  return q.intervals
+  return q.formula.map(degreeToSemitone)
 }
 
 export function chordTones(root: PitchClass, quality: QualityId): PitchClass[] {
@@ -85,7 +87,7 @@ const CHORD_SCALE_TYPE: Readonly<Record<QualityId, ScaleTypeId>> = {
   add9: 'major',
   minor: 'naturalMinor',
   m7: 'naturalMinor',
-  diminished: 'locrian',
+  diminished: 'diminished',
   augmented: 'augmented',
   '7': 'mixolydian',
   '9': 'mixolydian',

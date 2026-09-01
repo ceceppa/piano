@@ -481,14 +481,14 @@
 - **Source:** phase-2 review
 - **Context:**
   C augmented shows C, D, E, F, G, G#, A, B on the keyboard instead of the correct C, D♯, E, G, G♯, B. This is the one confirmed instance, spotted during phase-2 review; other chord/scale pairings should be audited for the same kind of error, not just this one.
-- **Status:** in-phase-3
+- **Status:** resolved
 
 ### Make scale notes easier to see on the keyboard
 - **Type:** refinement
 - **Source:** phase-2 review
 - **Context:**
   Scale-tone markers on the keyboard are hard to distinguish at a glance, separate from the (confirmed working) root-note cue.
-- **Status:** in-phase-3
+- **Status:** resolved
 
 ### Revisit overall Explore screen UI clarity
 - **Type:** refinement
@@ -502,11 +502,41 @@
 - **Source:** phase-2 review
 - **Context:**
   Add a panel underneath the keyboard listing the chord's notes and, when view mode allows, its scale's notes -- easier to reference than reading the keyboard markers alone.
-- **Status:** in-phase-3
+- **Status:** resolved
 
 ### Place keyboard directly under the root-note selector
 - **Type:** refinement
 - **Source:** phase-2 review
 - **Context:**
   Consider positioning the keyboard directly beneath the root-note selector rather than after the full root+quality control block, to make the chord root even clearer. Raised while confirming the chord-first layout decision during phase-2 review.
-- **Status:** in-phase-3
+- **Status:** resolved
+
+### Scale markers repeat across every keyboard section
+- **Type:** refinement
+- **Source:** phase-3 review
+- **Context:**
+  Scale-tone markers currently repeat identically in every octave/section of the keyboard, which reads as confusing. Show them once, starting from the scale's first visible root note.
+- **Status:** backlog
+
+### Scale-only view still shows chord notes
+- **Type:** bug
+- **Source:** phase-3 review
+- **Context:**
+  With View mode set to scale, the notes panel still shows the chord's notes. The user wants only the scale's notes displayed in that mode.
+- **Status:** backlog
+
+### Open decision: canonical chord-to-scale mapping formulas
+- **Type:** spec-gap
+- **Source:** phase-3 review
+- **Context:**
+  Tech spec must state the canonical chord-quality-to-scale mapping formulas, including the locrian scale.
+  we need to update the code using the correct updated formulas and also adding locrian scale as we mixed them before
+- **Status:** backlog
+
+### Open decision: diminished chord-scale mapping
+- **Type:** spec-gap
+- **Source:** phase-3 review
+- **Context:**
+  Tech spec must state the diminished chord's scale mapping and include the diminished scale.
+  sync diminished chord-scale mapping and add the diminished scale
+- **Status:** backlog
